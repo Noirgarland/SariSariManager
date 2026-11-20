@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">SariSariManager</string>
+    <string name="destination_dashboard">Dashboard</string>
+    <string name="destination_cashier">Cashier</string>
+    <string name="destination_products">Products</string>
+    <string name="destination_inventory">Inventory</string>
+    <string name="destination_reports">Reports</string>
+</resources>

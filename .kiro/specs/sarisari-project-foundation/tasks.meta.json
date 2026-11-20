@@ -1,0 +1,498 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Update the version catalog `gradle/libs.versions.toml`": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107694410
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107707633
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107745906
+      }
+    ],
+    "1.2 Update `build.gradle.kts` (root) and `app/build.gradle.kts`": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107696356
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107748975
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107897642
+      }
+    ],
+    "1.3 Verify dependency resolution and compatibility": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107696721
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107898263
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108178229
+      }
+    ],
+    "2. Checkpoint - Increment 1 build gate": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107696912
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108181751
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108268553
+      }
+    ],
+    "3.1 Create the Hilt modules in `di/`": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107697032
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108272225
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108302168
+      }
+    ],
+    "3.2 Add the Application class and wire the manifest and activity": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107697145
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108272458
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108302719
+      }
+    ],
+    "4. Checkpoint - Increment 2 build gate": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107697254
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108306064
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108385025
+      }
+    ],
+    "5.1 Create the database, entity, DAO and migration registry": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107697388
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108385384
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108456358
+      }
+    ],
+    "5.2 Create the domain model, repository interface, implementation and mappers": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107697535
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108456655
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108517594
+      }
+    ],
+    "5.3 Create the database and repository Hilt modules": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107697655
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108519025
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108625206
+      }
+    ],
+    "6. Checkpoint - Increment 3 build gate": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107697774
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108625758
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108735418
+      }
+    ],
+    "7.1 Move the theme to `core/designsystem`": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107697964
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108735759
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108759338
+      }
+    ],
+    "7.2 Define the brand theme and typography": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107698087
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108759958
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108811792
+      }
+    ],
+    "7.3 Add strings and the reusable placeholder composable": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107698237
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108760620
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108812181
+      }
+    ],
+    "8. Checkpoint - Increment 4 build gate": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107698358
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108815943
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108977988
+      }
+    ],
+    "9.1 Create routes, the destination list and bottom bar icons": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107698485
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108978334
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109021749
+      }
+    ],
+    "9.2 Create the five feature packages": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107698607
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109023575
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109065225
+      }
+    ],
+    "9.3 Create the navigation host and root composable": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107698717
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109065799
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109221116
+      }
+    ],
+    "9.4 Trim `MainActivity`": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107698834
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109220636
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109242574
+      }
+    ],
+    "10. Checkpoint - Increment 5 build gate": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107698954
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109243413
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109534222
+      }
+    ],
+    "11.1 Create test support files": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107699053
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109537990
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109678599
+      }
+    ],
+    "11.2 Write the placeholder ViewModel test": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107699159
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109689375
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795110512600
+      }
+    ],
+    "11.3 Write the navigation list and typography tests": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107699260
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109690172
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795110513256
+      }
+    ],
+    "11.9 Write the concrete DAO tests": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107699366
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109690977
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795110511952
+      }
+    ],
+    "11.10 Write the migration and database open failure tests": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107699488
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109691770
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795110511288
+      }
+    ],
+    "11.11 Write the Hilt module replacement test": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107699618
+      },
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109692542
+      }
+    ],
+    "11.12 Write the static source rules test": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107699730
+      }
+    ],
+    "12. Checkpoint - Increment 6 test gate": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107699856
+      }
+    ],
+    "13. Final delivery verification": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795107699971
+      }
+    ],
+    "1. Increment 1: Dependencies and build configuration": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108178401
+      }
+    ],
+    "3. Increment 2: Hilt and Application class": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108302836
+      }
+    ],
+    "5. Increment 3: Room database foundation": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108625391
+      }
+    ],
+    "7. Increment 4: Material 3 design system": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795108812280
+      }
+    ],
+    "9. Increment 5: Navigation and placeholder screens": [
+      {
+        "executionId": "e62915f3-7491-4b6f-9d34-5cf64a84a4c4",
+        "chatSessionId": "sess_fae5ff4a-8e70-4cca-80aa-1e0e3255b629",
+        "timestamp": 1795109242705
+      }
+    ]
+  }
+}
