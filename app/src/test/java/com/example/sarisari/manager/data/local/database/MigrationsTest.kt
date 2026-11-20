@@ -10,13 +10,8 @@ import org.junit.Test
 class MigrationsTest {
 
     @Test
-    fun databaseVersionIsOne() {
-        assertEquals(1, AppDatabase.VERSION)
-    }
-
-    @Test
-    fun allMigrationsIsEmptyAtVersionOne() {
-        assertTrue(ALL_MIGRATIONS.isEmpty())
+    fun databaseVersionIsFive() {
+        assertEquals(5, AppDatabase.VERSION)
     }
 
     @Test

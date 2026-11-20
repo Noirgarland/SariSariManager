@@ -106,7 +106,8 @@ Responsibilities:
 - Never use Float or Double for monetary calculations.
 - Store stock quantities as integers in the product's base unit. Do not use Float or Double for quantities.
 - Store the current stock as a cached value updated in the same transaction as each stock movement. A test must verify it equals the sum of movements.
-- Store application settings (including the costing method) in a Room table so they are included in backups.
+- Store application settings (including the costing method and store name) in a Room table so they are included in backups.
+- Store open and close times in a `store_sessions` table (`openedAt`, `closedAt` nullable, UTC epoch milliseconds). Only one session may be open at a time. Day grouping uses Asia/Manila.
 
 ## 4. Business Logic Standards
 
@@ -182,7 +183,7 @@ No cloud synchronization is required in V1.
 - Provide clear loading, empty, and error states.
 - Use accessible text sizes and touch targets (minimum 48dp).
 - Minimize unnecessary navigation and user input.
-- Put all user-visible text in string resources. V1 is English only.
+- Put all user-visible text in string resources. V1 ships English only. A Filipino translation is a planned later option (per-app locales), so never hardcode text.
 - Format money with one shared formatter (PHP, peso sign). Parse user-entered amounts into centavos in one place.
 
 ## 7. Offline-First Requirements

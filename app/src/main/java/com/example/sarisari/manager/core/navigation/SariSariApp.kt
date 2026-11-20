@@ -21,10 +21,14 @@ fun SariSariApp() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val showBottomBar = currentDestination?.hierarchy?.any { destination ->
+        topLevelDestinations.any { destination.hasRoute(it.route::class) }
+    } == true
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            if (showBottomBar) {
+                NavigationBar {
                 topLevelDestinations.forEach { item ->
                     val selected = currentDestination?.hierarchy?.any {
                         it.hasRoute(item.route::class)
@@ -32,11 +36,7 @@ fun SariSariApp() {
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
-                            navController.navigate(item.route) {
-                                popUpTo<DashboardRoute> { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
+                            navController.navigateToTopLevel(item.route)
                         },
                         icon = {
                             Icon(
@@ -46,6 +46,7 @@ fun SariSariApp() {
                         },
                         label = { Text(stringResource(item.labelRes)) },
                     )
+                }
                 }
             }
         },

@@ -2,7 +2,16 @@ package com.example.sarisari.manager.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.sarisari.manager.data.backup.StagedRestore
 import com.example.sarisari.manager.data.local.dao.AppSettingDao
+import com.example.sarisari.manager.data.local.dao.CategoryDao
+import com.example.sarisari.manager.data.local.dao.ExpenseDao
+import com.example.sarisari.manager.data.local.dao.ExportDao
+import com.example.sarisari.manager.data.local.dao.ReportDao
+import com.example.sarisari.manager.data.local.dao.StoreSessionDao
+import com.example.sarisari.manager.data.local.dao.ProductDao
+import com.example.sarisari.manager.data.local.dao.SaleDao
+import com.example.sarisari.manager.data.local.dao.StockMovementDao
 import com.example.sarisari.manager.data.local.database.ALL_MIGRATIONS
 import com.example.sarisari.manager.data.local.database.AppDatabase
 import dagger.Module
@@ -24,12 +33,39 @@ object DatabaseModule {
     fun provideAppDatabase(
         @ApplicationContext context: Context,
         @IoDispatcher io: CoroutineDispatcher,
-    ): AppDatabase =
-        Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
+    ): AppDatabase {
+        // A restore confirmed in Settings is applied here, before Room opens the file.
+        StagedRestore.applyIfPresent(context, DATABASE_NAME)
+        return Room.databaseBuilder(context, AppDatabase::class.java, DATABASE_NAME)
             .addMigrations(*ALL_MIGRATIONS)
             .setQueryCoroutineContext(io)
             .build()
+    }
 
     @Provides
     fun provideAppSettingDao(db: AppDatabase): AppSettingDao = db.appSettingDao()
+
+    @Provides
+    fun provideCategoryDao(db: AppDatabase): CategoryDao = db.categoryDao()
+
+    @Provides
+    fun provideProductDao(db: AppDatabase): ProductDao = db.productDao()
+
+    @Provides
+    fun provideStockMovementDao(db: AppDatabase): StockMovementDao = db.stockMovementDao()
+
+    @Provides
+    fun provideSaleDao(db: AppDatabase): SaleDao = db.saleDao()
+
+    @Provides
+    fun provideReportDao(db: AppDatabase): ReportDao = db.reportDao()
+
+    @Provides
+    fun provideExpenseDao(db: AppDatabase): ExpenseDao = db.expenseDao()
+
+    @Provides
+    fun provideStoreSessionDao(db: AppDatabase): StoreSessionDao = db.storeSessionDao()
+
+    @Provides
+    fun provideExportDao(db: AppDatabase): ExportDao = db.exportDao()
 }

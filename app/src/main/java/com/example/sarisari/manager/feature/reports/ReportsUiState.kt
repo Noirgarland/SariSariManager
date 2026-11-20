@@ -1,8 +1,15 @@
 package com.example.sarisari.manager.feature.reports
 
-import androidx.annotation.StringRes
-import com.example.sarisari.manager.R
+import com.example.sarisari.manager.domain.model.ReportSummary
+import com.example.sarisari.manager.domain.model.TopProduct
+import com.example.sarisari.manager.domain.usecase.ReportPeriod
 
 data class ReportsUiState(
-    @param:StringRes val titleRes: Int = R.string.destination_reports,
-)
+    val isLoading: Boolean = true,
+    val period: ReportPeriod? = null,
+    val canGoNext: Boolean = false,
+    val summary: ReportSummary = ReportSummary(),
+    val topProducts: List<TopProduct> = emptyList(),
+) {
+    val isDaily: Boolean get() = period is ReportPeriod.Day
+}

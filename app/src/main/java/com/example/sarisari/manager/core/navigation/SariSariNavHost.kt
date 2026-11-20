@@ -7,10 +7,18 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.example.sarisari.manager.feature.cashier.cashierScreen
+import com.example.sarisari.manager.feature.cashier.saleDetailScreen
+import com.example.sarisari.manager.feature.cashier.salesHistoryScreen
 import com.example.sarisari.manager.feature.dashboard.dashboardScreen
+import com.example.sarisari.manager.feature.expenses.expensesScreen
 import com.example.sarisari.manager.feature.inventory.inventoryScreen
+import com.example.sarisari.manager.feature.inventory.stockEntryScreen
+import com.example.sarisari.manager.feature.inventory.stockHistoryScreen
+import com.example.sarisari.manager.feature.more.moreScreen
+import com.example.sarisari.manager.feature.products.productEditScreen
 import com.example.sarisari.manager.feature.products.productsScreen
 import com.example.sarisari.manager.feature.reports.reportsScreen
+import com.example.sarisari.manager.feature.settings.settingsScreen
 
 @Composable
 fun SariSariNavHost(
@@ -26,10 +34,41 @@ fun SariSariNavHost(
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { ExitTransition.None },
     ) {
-        dashboardScreen()
+        dashboardScreen(
+            onNewSale = { navController.navigateToTopLevel(CashierRoute) },
+            onAddStock = { navController.navigate(InventoryRoute) },
+            onAddExpense = { navController.navigate(ExpensesRoute) },
+            onSeeReports = { navController.navigateToTopLevel(ReportsRoute) },
+        )
+        expensesScreen(onBack = { navController.popBackStack() })
         cashierScreen()
-        productsScreen()
-        inventoryScreen()
+        salesHistoryScreen(
+            onBack = { navController.popBackStack() },
+            onOpenSale = { navController.navigate(SaleDetailRoute(it)) },
+        )
+        saleDetailScreen(onBack = { navController.popBackStack() })
+        productsScreen(
+            onAddProduct = { navController.navigate(ProductEditRoute()) },
+            onEditProduct = { navController.navigate(ProductEditRoute(it)) },
+        )
+        productEditScreen(onBack = { navController.popBackStack() })
+        inventoryScreen(
+            onBack = { navController.popBackStack() },
+            onOpenProduct = { navController.navigate(StockEntryRoute(it)) },
+            onOpenHistory = { navController.navigate(StockHistoryRoute()) },
+        )
+        stockEntryScreen(
+            onBack = { navController.popBackStack() },
+            onOpenHistory = { navController.navigate(StockHistoryRoute(it)) },
+        )
+        stockHistoryScreen(onBack = { navController.popBackStack() })
         reportsScreen()
+        settingsScreen(onBack = { navController.popBackStack() })
+        moreScreen(
+            onOpenInventory = { navController.navigate(InventoryRoute) },
+            onOpenSalesHistory = { navController.navigate(SalesHistoryRoute) },
+            onOpenExpenses = { navController.navigate(ExpensesRoute) },
+            onOpenSettings = { navController.navigate(SettingsRoute) },
+        )
     }
 }

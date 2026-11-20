@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
 // Brand palette: store-friendly green (primary), teal (secondary), warm amber (tertiary).
 
 // Light
-private val GreenPrimaryLight = Color(0xFF1B6B3A)
+private val GreenPrimaryLight = Color(0xFF14513A)
 private val GreenOnPrimaryLight = Color(0xFFFFFFFF)
 private val GreenPrimaryContainerLight = Color(0xFFA6F4B4)
 private val GreenOnPrimaryContainerLight = Color(0xFF00210D)
@@ -18,11 +18,11 @@ private val TealSecondaryContainerLight = Color(0xFF9CF1F0)
 private val TealOnSecondaryContainerLight = Color(0xFF002020)
 private val AmberTertiaryLight = Color(0xFF7A5900)
 private val AmberOnTertiaryLight = Color(0xFFFFFFFF)
-private val AmberTertiaryContainerLight = Color(0xFFFFDEA1)
+private val AmberTertiaryContainerLight = Color(0xFFFFE08A)
 private val AmberOnTertiaryContainerLight = Color(0xFF261900)
 private val ErrorLight = Color(0xFFBA1A1A)
 private val OnErrorLight = Color(0xFFFFFFFF)
-private val BackgroundLight = Color(0xFFFBFDF8)
+private val BackgroundLight = Color(0xFFFAF6EA)
 private val OnBackgroundLight = Color(0xFF191C19)
 private val SurfaceVariantLight = Color(0xFFDDE5DB)
 private val OnSurfaceVariantLight = Color(0xFF414941)

@@ -124,7 +124,7 @@ Base package: `com.example.sarisari.manager`, under `app/src/main/java/com/examp
   - Run `./gradlew assembleDebug`. Confirm the build passes with no new warnings and that no `Greeting` declaration remains. Fix any failure before continuing. Ask the user if questions arise.
   - _Requirements: 8.8, 12.6_
 
-- [ ] 11. Increment 6: Testing foundation
+- [x] 11. Increment 6: Testing foundation
   - [x] 11.1 Create test support files
     - `src/test/resources/robolectric.properties` pinning a supported SDK (36, or 37 once confirmed)
     - `testing/MainDispatcherRule.kt`: `TestWatcher` that sets the Main dispatcher to a test dispatcher before each test and resets it in `finished`
@@ -174,15 +174,15 @@ Base package: `com.example.sarisari.manager`, under `app/src/main/java/com/examp
     - `data/local/database/DatabaseOpenFailureTest`: create a version 1 file, reopen with a higher version and no migration, expect an exception, and assert the file bytes are unchanged
     - _Requirements: 5.10, 5.11, 9.6_
 
-  - [-] 11.11 Write the Hilt module replacement test
+  - [x] 11.11 Write the Hilt module replacement test
     - `di/DispatcherModuleReplacementTest`: `@HiltAndroidTest` with `HiltTestApplication` and a `@TestInstallIn` module replacing `DispatcherModule`. A test-only holder receives the three qualified dispatchers. Assert it gets the replacements with no duplicate-binding error
     - _Requirements: 4.6, 4.11_
 
-  - [~] 11.12 Write the static source rules test
+  - [x] 11.12 Write the static source rules test
     - `SourceRulesTest` scanning `app/src/main`. Failure messages must name the file and the requirement number. Rules: no empty package (2.3), `ui/theme` absent (6.2), no `android.`, `androidx.` or `dagger.` import in `domain/` (2.4), no `data.local` import in `feature/` or `core/` (2.9, 10.4), exactly one `NavHost(` (7.1), no `Dispatchers.` outside `DispatcherModule` (4.8), no `fallbackToDestructiveMigration` or `allowMainThreadQueries` (5.10, 5.15), no `kapt` in Gradle files (1.3), no `INTERNET` in the manifest (1.10, 11.4), `allowBackup="false"` (3.4), no template purple hex values (6.3), no `Text("...")` string literals (6.10), no `Greeting` (8.8), one `*Screen`, `*ViewModel` and `*UiState` per feature (2.8)
     - _Requirements: 2.11, 10.8_
 
-- [~] 12. Checkpoint - Increment 6 test gate
+- [x] 12. Checkpoint - Increment 6 test gate
   - Run `./gradlew testDebugUnitTest`. It must exit with code 0, with at least one executed test and zero failures. Run `./gradlew assembleDebug` again. Fix any failure before continuing. Ask the user if questions arise.
   - _Requirements: 9.9, 9.12, 12.2, 12.6_
 

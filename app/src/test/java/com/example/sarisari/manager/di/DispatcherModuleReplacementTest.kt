@@ -19,6 +19,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.SQLiteMode
 import javax.inject.Inject
 
 /** Test dispatchers shared between the replacement module and the assertions. */
@@ -58,6 +59,7 @@ class DispatcherHolder @Inject constructor(
 @HiltAndroidTest
 @RunWith(RobolectricTestRunner::class)
 @Config(application = HiltTestApplication::class)
+@SQLiteMode(SQLiteMode.Mode.LEGACY)
 class DispatcherModuleReplacementTest {
 
     @get:Rule

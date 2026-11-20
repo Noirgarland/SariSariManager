@@ -1,8 +1,318 @@
 <resources>
     <string name="app_name">SariSariManager</string>
-    <string name="destination_dashboard">Dashboard</string>
-    <string name="destination_cashier">Cashier</string>
+    <string name="destination_dashboard">Home</string>
+    <string name="destination_cashier">Sell</string>
     <string name="destination_products">Products</string>
     <string name="destination_inventory">Inventory</string>
     <string name="destination_reports">Reports</string>
+    <string name="destination_more">More</string>
+
+    <!-- Common -->
+    <string name="action_back">Back</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_add">Add</string>
+    <string name="action_rename">Rename</string>
+
+    <!-- Products list -->
+    <string name="products_title">Products</string>
+    <string name="products_search">Search products</string>
+    <string name="products_filter_all">All</string>
+    <string name="products_filter_archived">Archived</string>
+    <string name="products_manage_categories">Categories</string>
+    <string name="products_add">Add product</string>
+    <string name="products_empty">No products yet. Tap + to add your first product.</string>
+    <string name="products_empty_filtered">No products match your search.</string>
+    <string name="product_price_cost">Price %1$s \u00B7 Cost %2$s</string>
+    <string name="product_stock">Stock: %1$d %2$s</string>
+    <string name="stock_status_in">Good</string>
+    <string name="stock_status_low">Low stock</string>
+    <string name="stock_status_out">Out of stock</string>
+    <string name="product_archived_badge">Archived</string>
+
+    <!-- Categories -->
+    <string name="categories_title">Categories</string>
+    <string name="categories_empty">No categories yet.</string>
+    <string name="category_name_label">Category name</string>
+    <string name="category_error_exists">That category already exists.</string>
+    <string name="category_error_blank">Enter a category name.</string>
+
+    <!-- Product form -->
+    <string name="product_form_add_title">Add product</string>
+    <string name="product_form_edit_title">Edit product</string>
+    <string name="product_form_name">Product name</string>
+    <string name="product_form_category">Category</string>
+    <string name="product_form_no_category">No category</string>
+    <string name="product_form_base_unit">Unit</string>
+    <string name="product_form_base_unit_hint">For example piece, bottle, or sachet</string>
+    <string name="product_form_cost">Cost per unit (\u20B1)</string>
+    <string name="product_form_price">Selling price per unit (\u20B1)</string>
+    <string name="product_form_threshold">Low-stock level</string>
+    <string name="product_form_threshold_hint">Warn when stock is at or below this number</string>
+    <string name="product_form_stock_note">Stock starts at 0 and is added through Inventory.</string>
+    <string name="product_form_units_title">Other selling units</string>
+    <string name="product_form_units_hint">Optional. For example a pack of 6 sold at its own price.</string>
+    <string name="product_form_unit_name">Unit name</string>
+    <string name="product_form_unit_quantity">Units inside</string>
+    <string name="product_form_unit_price">Price (\u20B1)</string>
+    <string name="product_form_unit_add">Add another unit</string>
+    <string name="product_form_unit_remove">Remove unit</string>
+    <string name="product_form_archive">Archive product</string>
+    <string name="product_form_restore">Restore product</string>
+    <string name="product_archive_confirm_title">Archive this product?</string>
+    <string name="product_archive_confirm_message">It will be hidden from the product list and the cashier. Its history is kept, and you can restore it later.</string>
+    <string name="product_archive_confirm_action">Archive</string>
+    <string name="product_error_name">Enter a product name of up to 80 characters.</string>
+    <string name="product_error_base_unit">Enter a unit, such as piece or bottle.</string>
+    <string name="product_error_cost">Enter a valid cost, such as 45 or 45.50.</string>
+    <string name="product_error_price">Enter a selling price above zero, such as 65 or 65.50.</string>
+    <string name="product_error_threshold">Enter a whole number, 0 or more.</string>
+    <string name="product_error_unit_name">Every extra unit needs a name.</string>
+    <string name="product_error_unit_duplicate">Unit names must differ from each other and from the main unit.</string>
+    <string name="product_error_unit_quantity">Units inside must be a whole number of 2 or more.</string>
+    <string name="product_error_unit_price">Every extra unit needs a price above zero.</string>
+
+    <!-- More -->
+    <string name="more_inventory_title">Inventory</string>
+    <string name="more_inventory_subtitle">Stock levels, receiving, adjustments, and history</string>
+
+    <!-- Inventory -->
+    <string name="inventory_title">Inventory</string>
+    <string name="inventory_search">Search products</string>
+    <string name="inventory_filter_all">All</string>
+    <string name="inventory_filter_low">Low or out of stock (%1$d)</string>
+    <string name="inventory_history">History</string>
+    <string name="inventory_empty">No products yet. Add products first, then manage their stock here.</string>
+    <string name="inventory_empty_filtered">No products match.</string>
+    <string name="inventory_stock_line">%1$d %2$s in stock</string>
+
+    <!-- Stock entry -->
+    <string name="stock_entry_title">Update stock</string>
+    <string name="stock_entry_current">On hand: %1$d %2$s</string>
+    <string name="stock_entry_current_cost">Current cost: %1$s per %2$s</string>
+    <string name="stock_mode_receive">Receive stock</string>
+    <string name="stock_mode_adjust">Adjust stock</string>
+    <string name="stock_receive_unit">Unit received</string>
+    <string name="stock_receive_unit_base">%1$s (base unit)</string>
+    <string name="stock_receive_unit_pack">%1$s (%2$d %3$s)</string>
+    <string name="stock_receive_quantity">How many received</string>
+    <string name="stock_receive_cost">Cost per %1$s (\u20B1)</string>
+    <string name="stock_note_optional">Note (optional)</string>
+    <string name="stock_note_required">Reason</string>
+    <string name="stock_adjust_kind">What happened</string>
+    <string name="stock_adjust_quantity">Quantity (%1$s)</string>
+    <string name="stock_kind_damaged">Damaged</string>
+    <string name="stock_kind_expired">Expired</string>
+    <string name="stock_kind_increase">Add (correction)</string>
+    <string name="stock_kind_decrease">Remove (correction)</string>
+    <string name="stock_view_history">View history for this product</string>
+    <string name="stock_error_quantity">Enter a whole number of 1 or more.</string>
+    <string name="stock_error_cost">Enter a valid cost, such as 45 or 45.50.</string>
+    <string name="stock_error_note">Add a short reason for this correction.</string>
+    <string name="stock_error_insufficient">That is more than the stock on hand.</string>
+
+    <!-- Stock history -->
+    <string name="stock_history_title">Stock history</string>
+    <string name="stock_history_empty">No stock changes yet.</string>
+    <string name="movement_type_receipt">Stock received</string>
+    <string name="movement_type_damaged">Damaged</string>
+    <string name="movement_type_expired">Expired</string>
+    <string name="movement_type_adjustment">Correction</string>
+    <string name="movement_type_sale">Sale</string>
+    <string name="movement_type_sale_void">Sale voided</string>
+    <string name="movement_quantity">%1$s %2$s</string>
+    <string name="movement_cost_each">%1$s each</string>
+
+    <!-- Cashier -->
+    <string name="sell_title">Sell</string>
+    <string name="sell_search">Search products</string>
+    <string name="sell_empty">No products yet. Add products in the Products tab.</string>
+    <string name="sell_empty_filtered">No products match your search.</string>
+    <string name="sell_tile_stock">%1$d in stock</string>
+    <string name="sell_cart_empty">Tap a product to add it to the cart.</string>
+    <string name="sell_cart_title">Cart (%1$d)</string>
+    <string name="sell_cart_clear">Clear</string>
+    <string name="sell_total">Total</string>
+    <string name="sell_proceed">Proceed to payment</string>
+    <string name="sell_line_each">%1$s each</string>
+    <string name="sell_line_name_unit">%1$s (%2$s)</string>
+    <string name="sell_line_low_stock">Only %1$d in stock</string>
+    <string name="sell_quantity_decrease">Decrease quantity</string>
+    <string name="sell_quantity_increase">Increase quantity</string>
+    <string name="sell_remove_line">Remove from cart</string>
+    <string name="sell_edit_price">Change price</string>
+    <string name="sell_price_dialog_title">Change selling price</string>
+    <string name="sell_price_dialog_label">Price per %1$s (\u20B1)</string>
+    <string name="sell_price_invalid">Enter a price above zero, such as 65 or 65.50.</string>
+    <string name="sell_unit_dialog_title">Choose unit</string>
+    <string name="sell_unit_option_base">%1$s \u2013 %2$s</string>
+    <string name="sell_unit_option_pack">%1$s (%2$d %3$s) \u2013 %4$s</string>
+
+    <!-- Payment -->
+    <string name="payment_title">Payment</string>
+    <string name="payment_total_amount">Total amount</string>
+    <string name="payment_method_cash">Cash</string>
+    <string name="payment_received_label">Amount received (\u20B1)</string>
+    <string name="payment_exact">Exact amount</string>
+    <string name="payment_quick_amount">%1$s</string>
+    <string name="payment_change">Change</string>
+    <string name="payment_not_enough">Amount received is less than the total.</string>
+    <string name="payment_complete">Complete sale</string>
+    <string name="payment_back">Back to cart</string>
+    <string name="payment_error_empty">The cart is empty.</string>
+    <string name="payment_error_quantity">A quantity in the cart is not valid.</string>
+    <string name="payment_error_price">A price in the cart is not valid.</string>
+    <string name="payment_error_unavailable">A product in the cart is no longer available. Remove it and try again.</string>
+    <string name="payment_error_failed">The sale could not be saved. Nothing was changed. Please try again.</string>
+
+    <!-- Sale complete -->
+    <string name="sale_complete_title">Sale complete</string>
+    <string name="sale_complete_total">Total: %1$s</string>
+    <string name="sale_complete_received">Received: %1$s</string>
+    <string name="sale_complete_change">Change: %1$s</string>
+    <string name="sale_complete_new">New sale</string>
+
+    <!-- Sales history -->
+    <string name="more_sales_title">Sales history</string>
+    <string name="more_sales_subtitle">Past sales, and voiding a sale</string>
+    <string name="sales_history_title">Sales history</string>
+    <string name="sales_history_empty">No sales yet.</string>
+    <string name="sale_number">Sale #%1$d</string>
+    <string name="sale_items_count">%1$d items</string>
+    <string name="sale_voided_badge">Voided</string>
+    <string name="sale_detail_total">Total</string>
+    <string name="sale_detail_received">Received</string>
+    <string name="sale_detail_change">Change</string>
+    <string name="sale_detail_profit">Gross profit</string>
+    <string name="sale_detail_not_found">This sale could not be found.</string>
+    <string name="sale_detail_line">%1$s \u00D7 %2$d @ %3$s</string>
+    <string name="sale_detail_voided_on">Voided on %1$s</string>
+    <string name="sale_detail_void_reason">Reason: %1$s</string>
+    <string name="sale_void_action">Void sale</string>
+    <string name="sale_void_dialog_title">Void this sale?</string>
+    <string name="sale_void_dialog_message">The sale stays in your records, marked as voided, and its items go back into stock. This cannot be undone.</string>
+    <string name="sale_void_reason_label">Reason (optional)</string>
+    <string name="sale_void_confirm">Void sale</string>
+    <string name="sale_void_error">The sale could not be voided.</string>
+
+    <!-- Dashboard -->
+    <string name="store_name_default">My Sari-Sari Store</string>
+    <string name="dashboard_status_open">Open since %1$s</string>
+    <string name="dashboard_status_closed">Closed</string>
+    <string name="dashboard_status_closed_at">Closed at %1$s</string>
+    <string name="dashboard_open_store">Open store</string>
+    <string name="dashboard_close_store">Close store</string>
+    <string name="dashboard_greeting">Today, %1$s</string>
+    <string name="dashboard_sales_today">Total sales today</string>
+    <string name="dashboard_transactions">Transactions</string>
+    <string name="dashboard_gross_profit">Gross profit</string>
+    <string name="dashboard_low_stock">Low-stock items</string>
+    <string name="dashboard_expenses_today">Expenses today</string>
+    <string name="dashboard_quick_actions">Quick actions</string>
+    <string name="dashboard_new_sale">New sale</string>
+    <string name="dashboard_add_stock">Add stock</string>
+    <string name="dashboard_add_expense">Add expense</string>
+    <string name="dashboard_top_selling">Top selling today</string>
+    <string name="dashboard_see_all">See all</string>
+    <string name="dashboard_no_sales">No sales yet today.</string>
+    <string name="top_product_sold">%1$d %2$s sold</string>
+    <string name="close_store_title">Close store</string>
+    <string name="close_store_message">Choose the time the store closed.</string>
+    <string name="close_store_forgot">The store was opened on %1$s and not closed. Choose the time it closed on that day.</string>
+    <string name="close_store_invalid">Closing time must be after opening time and not in the future.</string>
+    <string name="close_store_confirm">Close store</string>
+
+    <!-- Reports -->
+    <string name="reports_title">Reports</string>
+    <string name="reports_daily">Daily</string>
+    <string name="reports_monthly">Monthly</string>
+    <string name="reports_previous">Previous period</string>
+    <string name="reports_next">Next period</string>
+    <string name="reports_total_sales">Total sales</string>
+    <string name="reports_cogs">Cost of goods sold</string>
+    <string name="reports_gross_profit">Gross profit</string>
+    <string name="reports_expenses">Operating expenses</string>
+    <string name="reports_net_profit">Estimated net profit</string>
+    <string name="reports_transactions">Transactions</string>
+    <string name="reports_top_products">Top products</string>
+    <string name="reports_no_sales">No sales in this period.</string>
+    <string name="reports_note">Voided sales are not counted. Stock purchases are not counted as expenses.</string>
+
+    <!-- Expenses -->
+    <string name="more_expenses_title">Expenses</string>
+    <string name="more_expenses_subtitle">Electricity, rent, and other operating costs</string>
+    <string name="expenses_title">Expenses</string>
+    <string name="expenses_total">Total: %1$s</string>
+    <string name="expenses_empty">No expenses this month.</string>
+    <string name="expenses_add">Add expense</string>
+    <string name="expenses_delete">Delete expense</string>
+    <string name="expenses_delete_title">Delete this expense?</string>
+    <string name="expenses_delete_message">It will be removed from your reports.</string>
+    <string name="expenses_delete_confirm">Delete</string>
+    <string name="expense_form_category">Category</string>
+    <string name="expense_form_amount">Amount (\u20B1)</string>
+    <string name="expense_form_description">Description (optional)</string>
+    <string name="expense_form_date">Date: %1$s</string>
+    <string name="expense_form_change_date">Change date</string>
+    <string name="expense_form_not_stock">Record stock purchases through Inventory, not here.</string>
+    <string name="expense_error_amount">Enter an amount above zero, such as 150 or 150.50.</string>
+    <string name="expense_error_description">Keep the description to 120 characters or less.</string>
+    <string name="expense_error_date">The date cannot be in the future.</string>
+    <string name="expense_category_electricity">Electricity</string>
+    <string name="expense_category_water">Water</string>
+    <string name="expense_category_rent">Rent</string>
+    <string name="expense_category_transportation">Transportation</string>
+    <string name="expense_category_supplies">Supplies</string>
+    <string name="expense_category_salaries">Salaries</string>
+    <string name="expense_category_other">Other</string>
+    <string name="action_ok">OK</string>
+
+    <!-- Settings -->
+    <string name="more_settings_title">Settings</string>
+    <string name="more_settings_subtitle">Store name, costing method, backup, restore, and export</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_store_section">Store</string>
+    <string name="settings_store_name">Store name</string>
+    <string name="settings_store_name_saved">Store name saved.</string>
+    <string name="settings_store_name_invalid">Enter a store name of up to 60 characters.</string>
+    <string name="settings_costing_section">Inventory costing method</string>
+    <string name="settings_costing_weighted">Weighted average cost</string>
+    <string name="settings_costing_weighted_desc">Blends the cost of stock on hand with each new delivery. Recommended.</string>
+    <string name="settings_costing_latest">Latest purchase cost</string>
+    <string name="settings_costing_latest_desc">Uses the cost of the most recent delivery.</string>
+    <string name="settings_costing_confirm_title">Change costing method?</string>
+    <string name="settings_costing_confirm_message">The new method applies only to future stock receipts and sales. Past sales, costs, and reports will not change.</string>
+    <string name="settings_costing_confirm">Change method</string>
+    <string name="settings_costing_changed">Costing method changed.</string>
+    <string name="settings_backup_section">Backup and restore</string>
+    <string name="settings_backup_notice">Backups are saved on this phone or wherever you choose. They are not encrypted, so anyone with the file can read your store data. Keep it somewhere safe.</string>
+    <string name="settings_backup_create">Create backup</string>
+    <string name="settings_backup_restore">Restore from backup</string>
+    <string name="settings_backup_working">Creating backup\u2026</string>
+    <string name="settings_restore_checking">Checking backup file\u2026</string>
+    <string name="settings_backup_saved">Backup saved.</string>
+    <string name="settings_backup_failed">The backup could not be saved. Nothing was changed.</string>
+    <string name="settings_restore_confirm_title">Replace all current data?</string>
+    <string name="settings_restore_confirm_message">All products, sales, stock, expenses, and settings on this phone will be replaced with the backup from %1$s. A safety copy of your current data is kept in case the restore fails.</string>
+    <string name="settings_restore_confirm">Replace data</string>
+    <string name="settings_restore_restart_title">Restart to finish</string>
+    <string name="settings_restore_restart_message">The app will restart and load the backup.</string>
+    <string name="settings_restore_restart">Restart now</string>
+    <string name="settings_restore_applied">Backup restored.</string>
+    <string name="settings_restore_rolled_back">The backup could not be restored. Your previous data was kept.</string>
+    <string name="settings_restore_error_unreadable">This file is not a readable SariSari backup, or it is incomplete.</string>
+    <string name="settings_restore_error_manifest">This file is not a SariSari backup.</string>
+    <string name="settings_restore_error_checksum">This backup is damaged. Its contents do not match its checksum.</string>
+    <string name="settings_restore_error_integrity">This backup is damaged and cannot be used.</string>
+    <string name="settings_restore_error_tables">This backup is missing store data and cannot be used.</string>
+    <string name="settings_restore_error_newer">This backup was made by a newer version of the app. Update the app first.</string>
+    <string name="settings_restore_error_too_large">This backup is too large to restore.</string>
+    <string name="settings_export_section">Export to CSV</string>
+    <string name="settings_export_month">Sales month</string>
+    <string name="settings_export_sales">Export sales for this month</string>
+    <string name="settings_export_products">Export products and inventory</string>
+    <string name="settings_export_working">Exporting\u2026</string>
+    <string name="settings_export_done">Exported %1$d rows.</string>
+    <string name="settings_export_failed">The file could not be saved.</string>
 </resources>

@@ -103,7 +103,7 @@ Contains Hilt modules: `DatabaseModule`, `RepositoryModule`, `DispatcherModule`,
 Each feature must be independently organized.
 
 ### Dashboard
-- Sales summaries, profit summaries, inventory overview, business indicators.
+- Store name header, open/close store control, sales summaries, profit summaries, inventory overview, business indicators.
 
 ### Cashier
 - Product searching, shopping cart, quantity management, checkout, payment calculations, sales confirmation.
@@ -121,6 +121,7 @@ Each feature must be independently organized.
 - Sales reports, gross profit reports, expense reports, inventory valuation, business performance summaries.
 
 ### Settings
+- Store name editing.
 - Costing method selection.
 - Manual backup and restore, with confirmation dialogs.
 - CSV export of sales reports and of product and inventory lists.
@@ -148,6 +149,7 @@ Follow standard Kotlin conventions (PascalCase for classes, camelCase for functi
 
 ## 7. Navigation Organization
 Major application navigation is assembled centrally in core/navigation.
+- The bottom navigation has five tabs: Home, Sell, Products, Reports, More. More links to Inventory, Expenses, and Settings.
 - core/navigation holds the routes, bottom navigation configuration, and the top-level navigation host.
 - Each feature may expose its own navigation graph builder. core/navigation only assembles them.
 - Features must not independently manage the entire application navigation structure.
@@ -163,7 +165,8 @@ The V1 database supports:
 - Sale Items (with cost snapshot)
 - Inventory Stock Movements (with unit cost for receipts)
 - Expenses
-- Settings (including the costing method)
+- Settings (including the costing method and store name)
+- Store Sessions (open and close times)
 
 Deferred until their modules are approved: Suppliers, Purchases and Purchase Items (beyond stock receipts), and Customers.
 

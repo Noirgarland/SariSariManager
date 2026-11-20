@@ -18,6 +18,7 @@ V1 has a single owner and no login. The owner may change selling prices at the c
 ## 3. Core Modules
 
 ### Dashboard
+- Store name header and a manual Open/Close store button showing "open since" time
 - Daily sales summary
 - Gross profit summary
 - Inventory overview
@@ -28,9 +29,10 @@ V1 has a single owner and no login. The owner may change selling prices at the c
 - Search products
 - Add products to cart
 - Modify quantities
-- Change selling prices
+- Change selling prices per cart line and choose the selling unit
 - Calculate transaction totals
-- Accept cash payments
+- Accept cash payments only (quick-cash buttons, change calculation)
+- Void or return a completed sale
 - Calculate customer change
 - Record completed transactions
 
@@ -61,6 +63,7 @@ V1 has a single owner and no login. The owner may change selling prices at the c
 - Let the owner choose the inventory costing method (Weighted Average Cost or Latest Purchase Cost)
 
 ### Settings, Backup, and Export
+- Edit the store name
 - Choose the inventory costing method
 - Create a manual full backup of all business data
 - Restore from a backup file
@@ -74,6 +77,9 @@ V1 has a single owner and no login. The owner may change selling prices at the c
 - Digital payment recording
 - Cloud backup and synchronization
 - Multi-user and multi-device support
+- Filipino language option (V1 ships English only, with all text in string resources so a Filipino translation can be added)
+- Barcode scanning
+- Weekly reports, discounts, period-over-period comparison badges, and notification bell
 
 ## 4. Business Requirements
 - Currency must be Philippine Peso (PHP).
@@ -83,6 +89,7 @@ V1 has a single owner and no login. The owner may change selling prices at the c
 - Support individual, pack, box, and custom units.
 - Support different purchase and selling units with appropriate conversions.
 - Maintain historical transaction records.
+- The owner can record the store's open and close time each day. This only records times. It does not block sales. A forgotten session can be closed manually with an editable time.
 - Preserve historical purchase costs and selling prices.
 - Inventory changes must be traceable.
 - Completed transactions must not be silently overwritten. Corrections are made through a void or return record.
@@ -105,6 +112,7 @@ V1 has a single owner and no login. The owner may change selling prices at the c
 - Fast product searching and checkout.
 - Minimal steps for common store operations.
 - Clear and readable financial information.
+- Bottom navigation with five tabs: Home, Sell, Products, Reports, More. More holds Inventory, Expenses, and Settings.
 - Responsive Android layouts.
 - Consistent Material 3 design.
 - Prioritize usability on budget Android devices (Android 8.0 / API 26 and newer).

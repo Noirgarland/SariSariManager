@@ -19,7 +19,7 @@ class TopLevelDestinationsTest {
 
     private val expectedLabelKeys = listOf(
         "destination_dashboard", "destination_cashier", "destination_products",
-        "destination_inventory", "destination_reports"
+        "destination_reports", "destination_more"
     )
 
     @Test
@@ -32,19 +32,19 @@ class TopLevelDestinationsTest {
         assertEquals(
             listOf(
                 R.string.destination_dashboard, R.string.destination_cashier,
-                R.string.destination_products, R.string.destination_inventory,
-                R.string.destination_reports
+                R.string.destination_products,
+                R.string.destination_reports, R.string.destination_more
             ),
             topLevelDestinations.map { it.labelRes }
         )
         val labels = expectedLabelKeys.map { strings.getValue(it) }
-        assertEquals(listOf("Dashboard", "Cashier", "Products", "Inventory", "Reports"), labels)
+        assertEquals(listOf("Home", "Sell", "Products", "Reports", "More"), labels)
     }
 
     @Test
     fun routesAreInRequiredOrder() {
         assertEquals(
-            listOf<Any>(DashboardRoute, CashierRoute, ProductsRoute, InventoryRoute, ReportsRoute),
+            listOf<Any>(DashboardRoute, CashierRoute, ProductsRoute, ReportsRoute, MoreRoute),
             topLevelDestinations.map { it.route }
         )
     }
