@@ -166,7 +166,7 @@ private fun SaleDetailPreview() {
                 isLoading = false,
                 sale = Sale(
                     12, 19_000, 20_000, 1_000, 12_600, 1_700_000_000_000, null, null,
-                    listOf(SaleItem(1, 1, "Coke 1.5L", "bottle", 1, 2, 2, 6500, 13_000, 4500, 9000)),
+                    listOf(SaleItem(1, 1, "Coke 1.5L", "bottle", "bottle", 1, 2, 2, 6500, 13_000, 4500, 9000)),
                 ),
             ),
             onBack = {}, onVoid = {},

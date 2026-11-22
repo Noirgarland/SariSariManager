@@ -10,7 +10,10 @@ import com.example.sarisari.manager.data.local.entity.ProductEntity
 import com.example.sarisari.manager.domain.model.BackupError
 import com.example.sarisari.manager.domain.model.BackupOutcome
 import com.example.sarisari.manager.domain.model.RestoreResult
+import com.example.sarisari.manager.data.repository.SalesRepositoryImpl
+import com.example.sarisari.manager.domain.model.SaleLineInput
 import com.example.sarisari.manager.testing.FakeClock
+import com.example.sarisari.manager.testing.SchemaFixtures
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -216,5 +219,41 @@ class BackupRestoreTest {
         db = openLive()
         assertEquals("Old Store", db.appSettingDao().getByKey("store_name")?.value)
         assertTrue(productNames(db).isEmpty())
+    }
+
+    @Test
+    fun version5BackupWithSalesIsRestoredAndMigratedToTheCurrentSchema() = runTest {
+        val file = File(context.cacheDir, "v5.db")
+        SchemaFixtures.createDatabase(file, 5) { SchemaFixtures.fillVersion5SalesData(it) }
+        val bytes = file.readBytes().also { file.delete() }
+        val outcome = prepare(archive(bytes, manifestFor(bytes, schema = 5))) as BackupOutcome.Success
+        assertEquals(5, outcome.info.schemaVersion)
+        assertTrue(repo.confirmRestore())
+
+        db.close()
+        StagedRestore.applyIfPresent(context, dbName)
+        db = openLive()
+        assertEquals(RestoreResult.APPLIED, StagedRestore.takeResult(context))
+        assertEquals(listOf("Chips", "Coke"), productNames(db).sorted())
+        val items = SalesRepositoryImpl(db.saleDao(), clock).observeSale(1).first()!!.items
+        assertEquals(listOf("Coke", "Coke", "Chips (old name)"), items.map { it.productName })
+        assertEquals(listOf("bottle", "bottle", "pack"), items.map { it.baseUnitName })
+    }
+
+    @Test
+    fun currentSchemaBackupRoundTripsSaleSnapshots() = runTest {
+        val product = addProduct(db, "Coke")
+        db.stockMovementDao().receive(product, 5, 500, null, now = 1) { _, _ -> 100 }
+        SalesRepositoryImpl(db.saleDao(), clock).completeSale(listOf(SaleLineInput(product, "piece", 1, 2, 200)), 400)
+        val bytes = backupBytes()
+        assertEquals(AppDatabase.VERSION, (prepare(bytes) as BackupOutcome.Success).info.schemaVersion)
+        assertTrue(repo.confirmRestore())
+
+        db.close()
+        StagedRestore.applyIfPresent(context, dbName)
+        db = openLive()
+        val item = SalesRepositoryImpl(db.saleDao(), clock).observeSale(1).first()!!.items.single()
+        assertEquals("piece", item.baseUnitName)
+        assertEquals(3, db.productDao().getWithUnits(product)!!.product.stockQuantity)
     }
 }

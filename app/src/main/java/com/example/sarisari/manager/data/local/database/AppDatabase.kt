@@ -48,6 +48,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun exportDao(): ExportDao
 
     companion object {
-        const val VERSION = 5
+        const val VERSION = 6
     }
 }

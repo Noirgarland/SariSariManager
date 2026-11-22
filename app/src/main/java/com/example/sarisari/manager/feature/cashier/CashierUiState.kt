@@ -6,6 +6,7 @@ import com.example.sarisari.manager.domain.model.Category
 import com.example.sarisari.manager.domain.model.CompletedSale
 import com.example.sarisari.manager.domain.model.Product
 import com.example.sarisari.manager.domain.model.SaleLineInput
+import com.example.sarisari.manager.domain.model.StockShortage
 
 /** One line in the cart. [availableBaseStock] is the product's stock when the line was added. */
 data class CartLine(
@@ -38,6 +39,8 @@ data class CashierUiState(
     val unitPickerProduct: Product? = null,
     val isSaving: Boolean = false,
     @param:StringRes val errorRes: Int? = null,
+    /** Products the last checkout attempt could not cover, as read inside the checkout transaction. */
+    val stockShortages: List<StockShortage> = emptyList(),
     val completedSale: CompletedSale? = null,
 ) {
     val totalCentavos: Long get() = cart.sumOf { it.lineTotalCentavos }

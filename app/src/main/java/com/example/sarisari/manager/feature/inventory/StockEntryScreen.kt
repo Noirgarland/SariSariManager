@@ -151,7 +151,8 @@ internal fun StockEntryContent(
                     onValueChange = onQuantityChange,
                     label = stringResource(R.string.stock_receive_quantity),
                     keyboardType = KeyboardType.Number,
-                    error = errorText(uiState, StockEntryError.QUANTITY_INVALID, R.string.stock_error_quantity),
+                    error = errorText(uiState, StockEntryError.QUANTITY_INVALID, R.string.stock_error_quantity)
+                        ?: errorText(uiState, StockEntryError.STOCK_LIMIT_EXCEEDED, R.string.stock_error_limit),
                 )
                 EntryField(
                     value = uiState.cost,
@@ -182,7 +183,8 @@ internal fun StockEntryContent(
                     label = stringResource(R.string.stock_adjust_quantity, uiState.baseUnitName),
                     keyboardType = KeyboardType.Number,
                     error = errorText(uiState, StockEntryError.QUANTITY_INVALID, R.string.stock_error_quantity)
-                        ?: errorText(uiState, StockEntryError.INSUFFICIENT_STOCK, R.string.stock_error_insufficient),
+                        ?: errorText(uiState, StockEntryError.INSUFFICIENT_STOCK, R.string.stock_error_insufficient)
+                        ?: errorText(uiState, StockEntryError.STOCK_LIMIT_EXCEEDED, R.string.stock_error_limit),
                 )
                 val manual = uiState.kind == AdjustmentKind.MANUAL_INCREASE ||
                     uiState.kind == AdjustmentKind.MANUAL_DECREASE

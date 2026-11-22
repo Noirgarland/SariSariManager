@@ -111,6 +111,7 @@
     <string name="stock_error_cost">Enter a valid cost, such as 45 or 45.50.</string>
     <string name="stock_error_note">Add a short reason for this correction.</string>
     <string name="stock_error_insufficient">That is more than the stock on hand.</string>
+    <string name="stock_error_limit">That would put stock above the largest amount the app can record.</string>
 
     <!-- Stock history -->
     <string name="stock_history_title">Stock history</string>
@@ -164,6 +165,9 @@
     <string name="payment_error_quantity">A quantity in the cart is not valid.</string>
     <string name="payment_error_price">A price in the cart is not valid.</string>
     <string name="payment_error_unavailable">A product in the cart is no longer available. Remove it and try again.</string>
+    <string name="payment_error_insufficient_stock">Not enough stock to complete this sale. Nothing was saved. Go back to the cart and lower the quantities.</string>
+    <!-- 1: product name, 2: stock on hand, 3: quantity in the cart, 4: base unit name -->
+    <string name="payment_stock_shortage_line">%1$s: %2$d %4$s in stock, cart needs %3$d %4$s</string>
     <string name="payment_error_failed">The sale could not be saved. Nothing was changed. Please try again.</string>
 
     <!-- Sale complete -->

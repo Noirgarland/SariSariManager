@@ -2,7 +2,9 @@ package com.example.sarisari.manager.feature.cashier
 
 import com.example.sarisari.manager.R
 import com.example.sarisari.manager.domain.model.Product
+import com.example.sarisari.manager.domain.model.InsufficientCheckoutStockException
 import com.example.sarisari.manager.domain.model.ProductUnavailableException
+import com.example.sarisari.manager.domain.model.StockShortage
 import com.example.sarisari.manager.domain.model.ProductUnit
 import com.example.sarisari.manager.domain.usecase.CompleteSaleUseCase
 import com.example.sarisari.manager.testing.FakeCategoryRepository
@@ -165,6 +167,45 @@ class CashierViewModelTest {
             assertEquals(1, state.cart.size)
             assertEquals(R.string.payment_error_unavailable, state.errorRes)
             assertFalse(state.isSaving)
+        }
+    }
+
+    @Test
+    fun insufficientStockKeepsTheCartAndNamesTheProduct() = runTest {
+        collecting {
+            val shortage = StockShortage(2, "Piattos", "pack", availableBaseQuantity = 1, requestedBaseQuantity = 3)
+            sales.failWith = InsufficientCheckoutStockException(listOf(shortage))
+            viewModel.onProductTapped(chips)
+            viewModel.onIncrease("2:pack")
+            viewModel.onIncrease("2:pack")
+            viewModel.onProceedToPayment()
+            viewModel.onReceivedChange("100")
+            viewModel.onCompleteSale()
+
+            assertEquals(CashierStage.PAYMENT, state.stage)
+            assertEquals(R.string.payment_error_insufficient_stock, state.errorRes)
+            assertEquals(listOf(shortage), state.stockShortages)
+            assertFalse(state.isSaving)
+            assertTrue(sales.completed.isEmpty())
+            // The cart is unchanged except that the line now shows the stock read at checkout.
+            val line = state.cart.single()
+            assertEquals(3, line.quantity)
+            assertEquals(2000L, line.unitPriceCentavos)
+            assertEquals(1, line.availableBaseStock)
+            assertTrue(line.exceedsStock)
+
+            // Going back to fix the cart clears the message. After correcting the quantity the sale goes through.
+            viewModel.onBackToCart()
+            assertTrue(state.stockShortages.isEmpty())
+            assertNull(state.errorRes)
+            viewModel.onDecrease("2:pack")
+            viewModel.onDecrease("2:pack")
+            sales.failWith = null
+            viewModel.onProceedToPayment()
+            viewModel.onReceivedChange("20")
+            viewModel.onCompleteSale()
+            assertEquals(CashierStage.COMPLETE, state.stage)
+            assertEquals(1, sales.completed.single().first.single().quantity)
         }
     }
 

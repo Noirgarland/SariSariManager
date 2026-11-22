@@ -11,18 +11,24 @@ data class SaleLineInput(
     val quantity: Int,
     val unitPriceCentavos: Long,
 ) {
-    val baseQuantity: Int get() = quantity * unitFactor
-    val lineTotalCentavos: Long get() = quantity.toLong() * unitPriceCentavos
+    /** Computed in Long so a large quantity times a large factor cannot overflow. */
+    val baseQuantity: Long get() = quantity.toLong() * unitFactor
+
+    /** @throws ArithmeticException if the result does not fit in a Long. */
+    val lineTotalCentavos: Long get() = Math.multiplyExact(quantity.toLong(), unitPriceCentavos)
 }
 
-fun List<SaleLineInput>.totalCentavos(): Long = sumOf { it.lineTotalCentavos }
+/** @throws ArithmeticException on overflow, instead of wrapping to a wrong total. */
+fun List<SaleLineInput>.totalCentavos(): Long = fold(0L) { total, line -> Math.addExact(total, line.lineTotalCentavos) }
 
-/** A saved sale line. Name, unit, price, and cost are snapshots taken when the sale was made. */
+/** A saved sale line. Name, units, price, and cost are snapshots taken when the sale was made. */
 data class SaleItem(
     val id: Long,
     val productId: Long,
     val productName: String,
     val unitName: String,
+    /** The product's base unit at sale time. [baseQuantity] is counted in this unit. */
+    val baseUnitName: String,
     val unitFactor: Int,
     val quantity: Int,
     val baseQuantity: Int,

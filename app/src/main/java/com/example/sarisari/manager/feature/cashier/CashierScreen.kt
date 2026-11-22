@@ -256,6 +256,18 @@ private fun PaymentContent(uiState: CashierUiState, actions: CashierActions) {
             Text(stringResource(R.string.payment_not_enough), color = MaterialTheme.colorScheme.error)
         }
         uiState.errorRes?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
+        uiState.stockShortages.forEach { shortage ->
+            Text(
+                stringResource(
+                    R.string.payment_stock_shortage_line,
+                    shortage.productName,
+                    shortage.availableBaseQuantity,
+                    shortage.requestedBaseQuantity,
+                    shortage.baseUnitName,
+                ),
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
         Button(
             onClick = actions.onCompleteSale,
             enabled = uiState.canComplete,

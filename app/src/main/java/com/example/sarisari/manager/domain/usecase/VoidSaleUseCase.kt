@@ -2,10 +2,11 @@ package com.example.sarisari.manager.domain.usecase
 
 import com.example.sarisari.manager.domain.model.SaleAlreadyVoidedException
 import com.example.sarisari.manager.domain.model.SaleNotFoundException
+import com.example.sarisari.manager.domain.model.StockLimitExceededException
 import com.example.sarisari.manager.domain.repository.SalesRepository
 import javax.inject.Inject
 
-enum class VoidResult { VOIDED, ALREADY_VOIDED, NOT_FOUND }
+enum class VoidResult { VOIDED, ALREADY_VOIDED, NOT_FOUND, STOCK_LIMIT_EXCEEDED }
 
 /** Voids a completed sale. The sale record is kept. Its stock is returned through compensating movements. */
 class VoidSaleUseCase @Inject constructor(
@@ -18,5 +19,7 @@ class VoidSaleUseCase @Inject constructor(
         VoidResult.ALREADY_VOIDED
     } catch (_: SaleNotFoundException) {
         VoidResult.NOT_FOUND
+    } catch (_: StockLimitExceededException) {
+        VoidResult.STOCK_LIMIT_EXCEEDED
     }
 }

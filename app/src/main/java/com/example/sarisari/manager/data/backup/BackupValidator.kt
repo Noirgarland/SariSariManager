@@ -15,6 +15,8 @@ object BackupValidator {
         3 to listOf("stock_movements"),
         4 to listOf("sales", "sale_items"),
         5 to listOf("expenses", "store_sessions"),
+        // Version 6 adds a column to sale_items and no new tables.
+        6 to emptyList(),
     )
 
     fun expectedTables(schemaVersion: Int): List<String> =

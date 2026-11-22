@@ -127,6 +127,22 @@ class ReportDaoTest {
     }
 
     @Test
+    fun topProductsKeepHistoricalNamesAndUnitsAfterProductEdits() = runTest {
+        sell("2025-11-18T03:00:00Z", SaleLineInput(coke, "piece", 1, 3, 6500))
+        val product = db.productDao().getWithUnits(coke)!!.product
+        db.productDao().save(product.copy(name = "Coca-Cola 1.5L", baseUnitName = "bottle"), emptyList(), now = 9)
+        val before = reports.observeTopProducts(today.startMillis, today.endMillis, 10).first().single()
+        assertEquals("Coke", before.productName)
+        assertEquals("piece", before.baseUnitName)
+        assertEquals(3, before.baseQuantity)
+
+        // A later sale under the new name and unit is listed separately, so quantities in different units are not summed.
+        sell("2025-11-18T04:00:00Z", SaleLineInput(coke, "bottle", 1, 1, 6500))
+        val after = reports.observeTopProducts(today.startMillis, today.endMillis, 10).first()
+        assertEquals(listOf(Triple("Coke", "piece", 3), Triple("Coca-Cola 1.5L", "bottle", 1)), after.map { Triple(it.productName, it.baseUnitName, it.baseQuantity) })
+    }
+
+    @Test
     fun topProductsRankByQuantityAndSkipVoidedSales() = runTest {
         sell("2025-11-18T03:00:00Z", SaleLineInput(chips, "piece", 1, 4, 2000))
         sell("2025-11-18T04:00:00Z", SaleLineInput(coke, "piece", 1, 2, 6500), SaleLineInput(chips, "piece", 1, 1, 2000))

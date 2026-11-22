@@ -22,7 +22,7 @@ data class SaleEntity(
     @ColumnInfo(name = "void_reason") val voidReason: String? = null,
 )
 
-/** Name, unit, price, and cost are copies taken at sale time, so later product edits never change history. */
+/** Name, units, price, and cost are copies taken at sale time, so later product edits never change history. */
 @Entity(
     tableName = "sale_items",
     foreignKeys = [
@@ -47,6 +47,8 @@ data class SaleItemEntity(
     @ColumnInfo(name = "product_id") val productId: Long,
     @ColumnInfo(name = "product_name") val productName: String,
     @ColumnInfo(name = "unit_name") val unitName: String,
+    /** The product's base unit at sale time, the unit of [baseQuantity]. Added in schema version 6. */
+    @ColumnInfo(name = "base_unit_name") val baseUnitName: String,
     @ColumnInfo(name = "unit_factor") val unitFactor: Int,
     @ColumnInfo(name = "quantity") val quantity: Int,
     @ColumnInfo(name = "base_quantity") val baseQuantity: Int,

@@ -45,6 +45,7 @@ class SalesRepositoryImpl @Inject constructor(
         productId = productId,
         productName = productName,
         unitName = unitName,
+        baseUnitName = baseUnitName,
         unitFactor = unitFactor,
         quantity = quantity,
         baseQuantity = baseQuantity,

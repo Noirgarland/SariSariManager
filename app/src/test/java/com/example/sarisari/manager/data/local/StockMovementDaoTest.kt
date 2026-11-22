@@ -8,6 +8,7 @@ import com.example.sarisari.manager.data.local.entity.ProductEntity
 import com.example.sarisari.manager.data.repository.InventoryRepositoryImpl
 import com.example.sarisari.manager.domain.model.CostingMethod
 import com.example.sarisari.manager.domain.model.InsufficientStockException
+import com.example.sarisari.manager.domain.model.QuantityLimits
 import com.example.sarisari.manager.domain.model.StockMovementType
 import com.example.sarisari.manager.domain.usecase.AdjustStockUseCase
 import com.example.sarisari.manager.domain.usecase.AdjustmentKind
@@ -141,6 +142,41 @@ class StockMovementDaoTest {
         val before = db.productDao().getWithUnits(productId)!!.product
         db.productDao().save(before.copy(name = "Coke Zero", stockQuantity = 0), emptyList(), now = 99)
         assertEquals(7, product().stockQuantity)
+        assertCachedStockEqualsMovementSum()
+    }
+
+    @Test
+    fun receiptAndAdjustmentCannotPushStockPastTheLimit() = runTest {
+        val nearLimit = QuantityLimits.MAX_STOCK_QUANTITY - 10
+        db.openHelper.writableDatabase.execSQL("UPDATE products SET stock_quantity = $nearLimit WHERE id = $productId")
+        val movementsBefore = db.stockMovementDao().observe(productId, 50).first().size
+
+        assertEquals(StockEntryResult.Invalid(StockEntryError.STOCK_LIMIT_EXCEEDED), receive()(productId, 1, 11, 100, null))
+        assertEquals(
+            StockEntryResult.Invalid(StockEntryError.STOCK_LIMIT_EXCEEDED),
+            AdjustStockUseCase(repository())(productId, AdjustmentKind.MANUAL_INCREASE, 11, "count"),
+        )
+        assertEquals(nearLimit, product().stockQuantity)
+        assertEquals(movementsBefore, db.stockMovementDao().observe(productId, 50).first().size)
+
+        // Exactly reaching the limit is allowed.
+        assertEquals(StockEntryResult.Saved, receive()(productId, 1, 10, 100, null))
+        assertEquals(QuantityLimits.MAX_STOCK_QUANTITY, product().stockQuantity)
+    }
+
+    @Test
+    fun receiveRejectsOverflowingUnitMath() = runTest {
+        val use = receive()
+        // Int.MAX_VALUE boxes of Int.MAX_VALUE units would overflow Int; the factor is above the unit limit.
+        assertEquals(StockEntryResult.Invalid(StockEntryError.QUANTITY_INVALID), use(productId, Int.MAX_VALUE, Int.MAX_VALUE, 1, null))
+        // 1,001 boxes of 1,000 is 1,001,000 base units, above the per-receipt limit.
+        assertEquals(StockEntryResult.Invalid(StockEntryError.QUANTITY_INVALID), use(productId, 1_000, 1_001, 1, null))
+        // A huge cost per box is rejected rather than overflowing the total.
+        assertEquals(StockEntryResult.Invalid(StockEntryError.COST_INVALID), use(productId, 1, 2, Long.MAX_VALUE, null))
+        assertEquals(0, product().stockQuantity)
+        // The largest receipt is accepted.
+        assertEquals(StockEntryResult.Saved, use(productId, 1_000, 1_000, 100, null))
+        assertEquals(1_000_000, product().stockQuantity)
         assertCachedStockEqualsMovementSum()
     }
 }
