@@ -2,6 +2,7 @@ package com.example.sarisari.manager.domain.usecase
 
 import com.example.sarisari.manager.domain.model.Product
 import com.example.sarisari.manager.domain.model.ProductUnit
+import com.example.sarisari.manager.domain.model.QuantityLimits
 import com.example.sarisari.manager.domain.repository.ProductRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -57,6 +58,23 @@ class SaveProductUseCaseTest {
         assertEquals(setOf(ProductError.PRICE_INVALID), errorsOf(valid.copy(sellingPriceCentavos = 0)))
         assertEquals(setOf(ProductError.THRESHOLD_INVALID), errorsOf(valid.copy(lowStockThreshold = -1)))
         assertEquals(setOf(ProductError.NAME_REQUIRED), errorsOf(valid.copy(name = "x".repeat(81))))
+    }
+
+    @Test
+    fun rejectsValuesAboveTheSupportedLimits() {
+        val maxPrice = SaveProductUseCase.MAX_PRICE_CENTAVOS
+        val maxCost = SaveProductUseCase.MAX_COST_CENTAVOS
+        assertEquals(emptySet<ProductError>(), errorsOf(valid.copy(sellingPriceCentavos = maxPrice, costCentavos = maxCost)))
+        assertEquals(setOf(ProductError.PRICE_INVALID), errorsOf(valid.copy(sellingPriceCentavos = maxPrice + 1)))
+        assertEquals(setOf(ProductError.COST_INVALID), errorsOf(valid.copy(costCentavos = maxCost + 1)))
+        assertEquals(setOf(ProductError.THRESHOLD_INVALID), errorsOf(valid.copy(lowStockThreshold = Int.MAX_VALUE)))
+        val box = ProductUnit("box", QuantityLimits.MAX_UNIT_FACTOR, 100)
+        assertEquals(emptySet<ProductError>(), errorsOf(valid.copy(units = listOf(box))))
+        assertEquals(
+            setOf(ProductError.UNIT_QUANTITY_INVALID),
+            errorsOf(valid.copy(units = listOf(box.copy(baseQuantity = QuantityLimits.MAX_UNIT_FACTOR + 1)))),
+        )
+        assertEquals(setOf(ProductError.UNIT_PRICE_INVALID), errorsOf(valid.copy(units = listOf(box.copy(sellingPriceCentavos = maxPrice + 1)))))
     }
 
     @Test

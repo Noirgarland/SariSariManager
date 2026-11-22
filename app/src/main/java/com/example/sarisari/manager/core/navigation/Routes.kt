@@ -40,3 +40,9 @@ data object ExpensesRoute
 
 @Serializable
 data object SettingsRoute
+
+@Serializable
+data object UtangRoute
+
+@Serializable
+data class CustomerLedgerRoute(val customerId: Long)

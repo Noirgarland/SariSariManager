@@ -8,6 +8,7 @@ import androidx.room.Update
 import com.example.sarisari.manager.data.local.entity.ProductEntity
 import com.example.sarisari.manager.data.local.entity.ProductUnitEntity
 import com.example.sarisari.manager.data.local.entity.ProductWithUnits
+import com.example.sarisari.manager.data.local.entity.StockMovementEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -48,14 +49,36 @@ abstract class ProductDao {
     @Query("UPDATE products SET is_archived = :archived, updated_at = :now WHERE id = :id")
     abstract suspend fun setArchived(id: Long, archived: Boolean, now: Long)
 
+    @Insert
+    protected abstract suspend fun insertMovement(movement: StockMovementEntity): Long
+
     /**
      * Inserts a product with id 0, otherwise updates it while keeping its cached stock and creation time.
      * Units are replaced. All writes happen in one transaction. Returns the product id.
+     *
+     * A new product's [ProductEntity.stockQuantity] is its opening stock. It is recorded as a receipt
+     * at the product's cost, so the cached stock always equals the sum of its movements.
      */
     @Transaction
     open suspend fun save(product: ProductEntity, units: List<ProductUnitEntity>, now: Long): Long {
         val productId = if (product.id == 0L) {
-            insertProduct(product.copy(createdAt = now, updatedAt = now))
+            require(product.stockQuantity >= 0) { "Opening stock cannot be negative" }
+            val id = insertProduct(product.copy(createdAt = now, updatedAt = now))
+            if (product.stockQuantity > 0) {
+                insertMovement(
+                    StockMovementEntity(
+                        productId = id,
+                        type = "RECEIPT",
+                        quantityChange = product.stockQuantity,
+                        unitCostCentavos = product.costCentavos,
+                        totalCostCentavos = Math.multiplyExact(product.stockQuantity.toLong(), product.costCentavos),
+                        reason = OPENING_STOCK_REASON,
+                        createdAt = now,
+                        updatedAt = now,
+                    )
+                )
+            }
+            id
         } else {
             val existing = requireNotNull(getById(product.id)) { "Product ${product.id} does not exist" }
             updateProduct(
@@ -70,5 +93,9 @@ abstract class ProductDao {
         }
         insertUnits(units.map { it.copy(id = 0, productId = productId, createdAt = now, updatedAt = now) })
         return productId
+    }
+
+    companion object {
+        const val OPENING_STOCK_REASON = "Opening stock"
     }
 }

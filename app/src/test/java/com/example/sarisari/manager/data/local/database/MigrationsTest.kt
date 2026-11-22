@@ -10,8 +10,8 @@ import org.junit.Test
 class MigrationsTest {
 
     @Test
-    fun databaseVersionIsFive() {
-        assertEquals(5, AppDatabase.VERSION)
+    fun databaseVersionIsSeven() {
+        assertEquals(7, AppDatabase.VERSION)
     }
 
     @Test

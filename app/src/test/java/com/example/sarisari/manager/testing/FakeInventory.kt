@@ -69,17 +69,23 @@ class FakeInventoryRepository(
 /** Records completed sales in memory. Set [failWith] to make checkout throw. */
 class FakeSalesRepository : com.example.sarisari.manager.domain.repository.SalesRepository {
     val completed = mutableListOf<Pair<List<com.example.sarisari.manager.domain.model.SaleLineInput>, Long>>()
+
+    /** The utang customer of each completed sale, or null for cash. Same order as [completed]. */
+    val creditCustomers = mutableListOf<Long?>()
     var failWith: Exception? = null
 
     override suspend fun completeSale(
         lines: List<com.example.sarisari.manager.domain.model.SaleLineInput>,
         amountReceivedCentavos: Long,
+        creditCustomerId: Long?,
     ): com.example.sarisari.manager.domain.model.CompletedSale {
         failWith?.let { throw it }
         completed += lines to amountReceivedCentavos
+        creditCustomers += creditCustomerId
         val total = lines.sumOf { it.lineTotalCentavos }
+        val credit = if (creditCustomerId == null) 0L else maxOf(0L, total - amountReceivedCentavos)
         return com.example.sarisari.manager.domain.model.CompletedSale(
-            completed.size.toLong(), total, amountReceivedCentavos, amountReceivedCentavos - total, 1,
+            completed.size.toLong(), total, amountReceivedCentavos, maxOf(0L, amountReceivedCentavos - total), 1, credit,
         )
     }
 

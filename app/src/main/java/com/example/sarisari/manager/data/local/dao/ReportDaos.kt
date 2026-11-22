@@ -18,7 +18,8 @@ interface ReportDao {
         """
         SELECT COUNT(*) AS transactions,
                COALESCE(SUM(total_centavos), 0) AS revenue,
-               COALESCE(SUM(total_cost_centavos), 0) AS cost
+               COALESCE(SUM(total_cost_centavos), 0) AS cost,
+               COALESCE(SUM(credit_centavos), 0) AS credit
         FROM sales
         WHERE voided_at IS NULL AND created_at >= :start AND created_at < :end
         """
@@ -30,13 +31,12 @@ interface ReportDao {
 
     @Query(
         """
-        SELECT i.product_id AS product_id, p.name AS product_name, p.base_unit_name AS base_unit_name,
+        SELECT i.product_id AS product_id, i.product_name AS product_name, i.base_unit_name AS base_unit_name,
                SUM(i.base_quantity) AS quantity, SUM(i.line_total_centavos) AS revenue
         FROM sale_items i
         JOIN sales s ON s.id = i.sale_id
-        JOIN products p ON p.id = i.product_id
         WHERE s.voided_at IS NULL AND s.created_at >= :start AND s.created_at < :end
-        GROUP BY i.product_id
+        GROUP BY i.product_id, i.product_name, i.base_unit_name
         ORDER BY quantity DESC, revenue DESC
         LIMIT :limit
         """

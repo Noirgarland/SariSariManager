@@ -4,32 +4,26 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,17 +31,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sarisari.manager.R
+import com.example.sarisari.manager.core.designsystem.AppHeader
+import com.example.sarisari.manager.core.designsystem.CardShape
+import com.example.sarisari.manager.core.designsystem.CategoryChipRow
 import com.example.sarisari.manager.core.designsystem.SariSariManagerTheme
+import com.example.sarisari.manager.core.designsystem.SearchField
+import com.example.sarisari.manager.core.designsystem.SurfaceCard
 import com.example.sarisari.manager.core.util.Money
 import com.example.sarisari.manager.domain.model.CompletedSale
+import com.example.sarisari.manager.domain.model.Customer
 import com.example.sarisari.manager.domain.model.Product
+import com.example.sarisari.manager.feature.cashier.components.CustomerPickerDialog
+import com.example.sarisari.manager.feature.cashier.components.PaymentMethodSelector
+import com.example.sarisari.manager.feature.cashier.components.UtangCustomerCard
+import com.example.sarisari.manager.feature.cashier.components.AmountKeypad
+import com.example.sarisari.manager.feature.cashier.components.AmountKeypadInput
 import com.example.sarisari.manager.feature.cashier.components.CartPanel
 import com.example.sarisari.manager.feature.cashier.components.PriceEditDialog
 import com.example.sarisari.manager.feature.cashier.components.ProductTile
@@ -76,6 +82,12 @@ fun CashierScreen(viewModel: CashierViewModel = hiltViewModel()) {
             onQuickCash = viewModel::onQuickCash,
             onCompleteSale = viewModel::onCompleteSale,
             onNewSale = viewModel::onNewSale,
+            onPaymentMethodSelected = viewModel::onPaymentMethodSelected,
+            onCustomerPickerOpened = viewModel::onCustomerPickerOpened,
+            onCustomerPickerDismissed = viewModel::onCustomerPickerDismissed,
+            onCustomerQueryChange = viewModel::onCustomerQueryChange,
+            onCustomerChosen = viewModel::onCustomerChosen,
+            onAddCustomer = viewModel::onAddCustomer,
         ),
     )
 }
@@ -98,6 +110,12 @@ internal data class CashierActions(
     val onQuickCash: (Long) -> Unit = {},
     val onCompleteSale: () -> Unit = {},
     val onNewSale: () -> Unit = {},
+    val onPaymentMethodSelected: (PaymentMethod) -> Unit = {},
+    val onCustomerPickerOpened: () -> Unit = {},
+    val onCustomerPickerDismissed: () -> Unit = {},
+    val onCustomerQueryChange: (String) -> Unit = {},
+    val onCustomerChosen: (Customer) -> Unit = {},
+    val onAddCustomer: (String) -> Unit = {},
 )
 
 @Composable
@@ -112,68 +130,48 @@ internal fun CashierContent(uiState: CashierUiState, actions: CashierActions) {
 @Composable
 private fun SellContent(uiState: CashierUiState, actions: CashierActions) {
     var priceEditKey by remember { mutableStateOf<String?>(null) }
-
-    Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text(stringResource(R.string.sell_title), style = MaterialTheme.typography.headlineSmall)
-        OutlinedTextField(
-            value = uiState.query,
-            onValueChange = actions.onQueryChange,
-            label = { Text(stringResource(R.string.sell_search)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            item {
-                FilterChip(
-                    selected = uiState.selectedCategoryId == null,
-                    onClick = { actions.onCategorySelected(null) },
-                    label = { Text(stringResource(R.string.products_filter_all)) },
-                )
-            }
-            items(uiState.categories, key = { it.id }) { category ->
-                FilterChip(
-                    selected = uiState.selectedCategoryId == category.id,
-                    onClick = { actions.onCategorySelected(category.id) },
-                    label = { Text(category.name) },
-                )
-            }
-        }
-        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            when {
-                uiState.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                uiState.products.isEmpty() -> Text(
-                    stringResource(if (uiState.isFiltering) R.string.sell_empty_filtered else R.string.sell_empty),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.align(Alignment.Center),
-                )
-                else -> LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 104.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(bottom = 8.dp),
-                ) {
-                    items(uiState.products, key = { it.id }) { product ->
-                        ProductTile(product = product, onClick = { actions.onProductTapped(product) })
+    Column(modifier = Modifier.fillMaxSize()) {
+        AppHeader(title = stringResource(R.string.sell_title))
+        Column(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            SearchField(uiState.query, actions.onQueryChange, stringResource(R.string.sell_search))
+            CategoryChipRow(uiState.categories, uiState.selectedCategoryId, actions.onCategorySelected)
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                when {
+                    uiState.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    uiState.products.isEmpty() -> Text(
+                        stringResource(if (uiState.isFiltering) R.string.sell_empty_filtered else R.string.sell_empty),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                    else -> LazyVerticalGrid(
+                        columns = GridCells.Adaptive(minSize = 104.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 8.dp),
+                    ) {
+                        items(uiState.products, key = { it.id }) { product ->
+                            ProductTile(product = product, onClick = { actions.onProductTapped(product) })
+                        }
                     }
                 }
             }
+            CartPanel(
+                cart = uiState.cart,
+                itemCount = uiState.itemCount,
+                totalCentavos = uiState.totalCentavos,
+                onIncrease = actions.onIncrease,
+                onDecrease = actions.onDecrease,
+                onRemove = actions.onRemove,
+                onEditPrice = { priceEditKey = it.key },
+                onClear = actions.onClearCart,
+                onProceed = actions.onProceedToPayment,
+            )
         }
-        CartPanel(
-            cart = uiState.cart,
-            itemCount = uiState.itemCount,
-            totalCentavos = uiState.totalCentavos,
-            onIncrease = actions.onIncrease,
-            onDecrease = actions.onDecrease,
-            onRemove = actions.onRemove,
-            onEditPrice = { priceEditKey = it.key },
-            onClear = actions.onClearCart,
-            onProceed = actions.onProceedToPayment,
-        )
     }
-
     uiState.unitPickerProduct?.let { product ->
         UnitPickerDialog(
             product = product,
@@ -195,75 +193,169 @@ private fun SellContent(uiState: CashierUiState, actions: CashierActions) {
 
 private val quickCashPesos = listOf(20L, 50L, 100L, 200L, 500L, 1000L)
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PaymentContent(uiState: CashierUiState, actions: CashierActions) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .imePadding()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(stringResource(R.string.payment_title), style = MaterialTheme.typography.headlineSmall)
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(stringResource(R.string.payment_total_amount), style = MaterialTheme.typography.bodyMedium)
+    Column(modifier = Modifier.fillMaxSize()) {
+        AppHeader(title = stringResource(R.string.payment_title), onBack = actions.onBackToCart)
+        Column(
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SurfaceCard(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    stringResource(R.string.payment_total_amount),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 Text(
                     Money.format(uiState.totalCentavos),
                     style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
                 )
-                Text(stringResource(R.string.payment_method_cash), style = MaterialTheme.typography.bodyMedium)
             }
+            Text(stringResource(R.string.payment_method_title), style = MaterialTheme.typography.titleMedium)
+            PaymentMethodSelector(uiState.paymentMethod, actions.onPaymentMethodSelected)
+            if (uiState.isUtang) {
+                UtangCustomerCard(uiState.customer, actions.onCustomerPickerOpened)
+            }
+            Text(
+                stringResource(if (uiState.isUtang) R.string.payment_cash_now_label else R.string.payment_received_label),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            ReceivedAmountDisplay(uiState.receivedText)
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    OutlinedButton(
+                        onClick = { actions.onQuickCash(uiState.totalCentavos) },
+                        shape = CardShape,
+                        modifier = Modifier.heightIn(min = 48.dp),
+                    ) { Text(stringResource(R.string.payment_exact)) }
+                }
+                // On utang the owner may take part of the total now, so smaller notes are offered too.
+                val quick = if (uiState.isUtang) quickCashPesos else quickCashPesos.filter { it * 100 >= uiState.totalCentavos }
+                items(quick.take(if (uiState.isUtang) quickCashPesos.size else 4)) { pesos ->
+                    OutlinedButton(
+                        onClick = { actions.onQuickCash(pesos * 100) },
+                        shape = CardShape,
+                        modifier = Modifier.heightIn(min = 48.dp),
+                    ) { Text(stringResource(R.string.payment_quick_amount, Money.format(pesos * 100))) }
+                }
+            }
+            AmountKeypad(onKey = { key -> actions.onReceivedChange(AmountKeypadInput.press(uiState.receivedText, key)) })
+            if (uiState.isUtang) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    UtangAmountCard(uiState.creditCentavos, Modifier.weight(1f))
+                    ChangeCard(uiState.changeCentavos, Modifier.weight(1f))
+                }
+            } else {
+                ChangeCard(uiState.changeCentavos)
+            }
+            if (!uiState.isUtang && uiState.receivedText.isNotBlank() && uiState.changeCentavos == null) {
+                Text(stringResource(R.string.payment_not_enough), color = MaterialTheme.colorScheme.error)
+            }
+            uiState.errorRes?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
+            uiState.stockShortages.forEach { shortage ->
+                Text(
+                    stringResource(
+                        R.string.payment_stock_shortage_line,
+                        shortage.productName,
+                        shortage.availableBaseQuantity,
+                        shortage.requestedBaseQuantity,
+                        shortage.baseUnitName,
+                    ),
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+            Button(
+                onClick = actions.onCompleteSale,
+                enabled = uiState.canComplete,
+                shape = CardShape,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
+            ) { Text(stringResource(R.string.payment_complete), style = MaterialTheme.typography.titleMedium) }
         }
-        OutlinedTextField(
-            value = uiState.receivedText,
-            onValueChange = actions.onReceivedChange,
-            label = { Text(stringResource(R.string.payment_received_label)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+    }
+    if (uiState.showCustomerPicker) {
+        CustomerPickerDialog(
+            query = uiState.customerQuery,
+            customers = uiState.customers,
+            errorRes = uiState.customerErrorRes,
+            onQueryChange = actions.onCustomerQueryChange,
+            onChoose = actions.onCustomerChosen,
+            onAdd = actions.onAddCustomer,
+            onDismiss = actions.onCustomerPickerDismissed,
+        )
+    }
+}
+
+/** What goes on the customer's utang. Amber, to set it apart from cash. */
+@Composable
+private fun UtangAmountCard(creditCentavos: Long, modifier: Modifier = Modifier) {
+    SurfaceCard(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        border = false,
+    ) {
+        Text(
+            stringResource(R.string.payment_utang_amount),
+            style = MaterialTheme.typography.titleSmall,
+            textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(
-                onClick = { actions.onQuickCash(uiState.totalCentavos) },
-                modifier = Modifier.heightIn(min = 48.dp),
-            ) { Text(stringResource(R.string.payment_exact)) }
-            quickCashPesos.filter { it * 100 >= uiState.totalCentavos }.take(4).forEach { pesos ->
-                OutlinedButton(
-                    onClick = { actions.onQuickCash(pesos * 100) },
-                    modifier = Modifier.heightIn(min = 48.dp),
-                ) { Text(stringResource(R.string.payment_quick_amount, Money.format(pesos * 100))) }
-            }
-        }
-        val change = uiState.changeCentavos
-        Card(
+        Text(
+            Money.format(creditCentavos),
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-        ) {
-            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(stringResource(R.string.payment_change), style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    Money.format(change ?: 0),
-                    style = MaterialTheme.typography.displaySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
-            }
+        )
+    }
+}
+
+/** Shows the typed amount. Typing happens on the keypad below. */
+@Composable
+private fun ReceivedAmountDisplay(receivedText: String) {
+    SurfaceCard(modifier = Modifier.fillMaxWidth(), contentPadding = 14.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                stringResource(R.string.payment_peso_sign),
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                receivedText.ifEmpty { stringResource(R.string.payment_amount_placeholder) },
+                style = MaterialTheme.typography.headlineSmall,
+                color = if (receivedText.isEmpty()) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(start = 8.dp),
+            )
         }
-        if (uiState.receivedText.isNotBlank() && change == null) {
-            Text(stringResource(R.string.payment_not_enough), color = MaterialTheme.colorScheme.error)
-        }
-        uiState.errorRes?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
-        Button(
-            onClick = actions.onCompleteSale,
-            enabled = uiState.canComplete,
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
-        ) { Text(stringResource(R.string.payment_complete)) }
-        TextButton(onClick = actions.onBackToCart, modifier = Modifier.heightIn(min = 48.dp)) {
-            Text(stringResource(R.string.payment_back))
-        }
+    }
+}
+
+@Composable
+private fun ChangeCard(changeCentavos: Long?, modifier: Modifier = Modifier) {
+    SurfaceCard(
+        modifier = modifier.fillMaxWidth(),
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        border = false,
+    ) {
+        Text(
+            stringResource(R.string.payment_change),
+            style = MaterialTheme.typography.titleSmall,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            Money.format(changeCentavos ?: 0),
+            style = MaterialTheme.typography.displaySmall,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -274,16 +366,27 @@ private fun SaleCompleteContent(sale: CompletedSale, onNewSale: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(stringResource(R.string.sale_complete_title), style = MaterialTheme.typography.headlineMedium)
-        Text(stringResource(R.string.sale_complete_total, Money.format(sale.totalCentavos)), style = MaterialTheme.typography.titleMedium)
-        Text(stringResource(R.string.sale_complete_received, Money.format(sale.amountReceivedCentavos)), style = MaterialTheme.typography.titleMedium)
-        Text(
-            stringResource(R.string.sale_complete_change, Money.format(sale.changeCentavos)),
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary,
+        Icon(
+            painterResource(R.drawable.ic_check_circle),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(72.dp),
         )
-        Button(onClick = onNewSale, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
-            Text(stringResource(R.string.sale_complete_new))
+        Text(stringResource(R.string.sale_complete_title), style = MaterialTheme.typography.headlineMedium)
+        SurfaceCard(modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.sale_complete_total, Money.format(sale.totalCentavos)), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.sale_complete_received, Money.format(sale.amountReceivedCentavos)), style = MaterialTheme.typography.titleMedium)
+            if (sale.creditCentavos > 0) {
+                Text(
+                    stringResource(R.string.sale_complete_utang, Money.format(sale.creditCentavos), sale.customerName.orEmpty()),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.tertiary,
+                )
+            }
+        }
+        ChangeCard(sale.changeCentavos)
+        Button(onClick = onNewSale, shape = CardShape, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+            Text(stringResource(R.string.sale_complete_new), style = MaterialTheme.typography.titleMedium)
         }
     }
 }
@@ -306,7 +409,7 @@ private fun SellPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, heightDp = 1100)
 @Composable
 private fun PaymentPreview() {
     SariSariManagerTheme {

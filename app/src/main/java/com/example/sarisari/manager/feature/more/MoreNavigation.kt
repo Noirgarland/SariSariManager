@@ -5,6 +5,7 @@ import androidx.navigation.compose.composable
 import com.example.sarisari.manager.core.navigation.MoreRoute
 
 fun NavGraphBuilder.moreScreen(
+    onOpenUtang: () -> Unit,
     onOpenInventory: () -> Unit,
     onOpenSalesHistory: () -> Unit,
     onOpenExpenses: () -> Unit,
@@ -12,6 +13,7 @@ fun NavGraphBuilder.moreScreen(
 ) {
     composable<MoreRoute> {
         MoreScreen(
+            onOpenUtang = onOpenUtang,
             onOpenInventory = onOpenInventory,
             onOpenSalesHistory = onOpenSalesHistory,
             onOpenExpenses = onOpenExpenses,

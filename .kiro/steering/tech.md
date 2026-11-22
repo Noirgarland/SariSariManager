@@ -8,7 +8,7 @@ The application must use the following technologies.
 
 ### Platform
 - Offline-first native Android application.
-- Minimum SDK: API 26 (Android 8.0). Keep the existing compileSdk, targetSdk and Java 11 configuration unless a change is necessary.
+- Minimum SDK: API 26 (Android 8.0). compileSdk and targetSdk: API 37. Java 17 for source/target compatibility, the Kotlin JVM target, and the Gradle daemon. Robolectric unit tests run on SDK 34, because SDK 35+ sandboxes need a Java 21 runtime.
 - Use `java.time` for dates and times. Core library desugaring is not required at API 26.
 - Store timestamps as UTC epoch milliseconds.
 - Use the Asia/Manila time zone to define "daily" and "monthly" report boundaries.
@@ -144,6 +144,9 @@ Responsibilities:
 - A completed sale must preserve its item descriptions, quantities, selling prices, and cost snapshots.
 - Checkout must save the sale, sale items, and inventory deductions atomically.
 - Failed transactions must not leave partially updated inventory.
+- Checkout must not take stock below zero. Quantities are summed per product across cart lines and checked inside the checkout transaction. An insufficient-stock result names each product with its available and requested quantity, and the cart is kept.
+- Utang: a sale may put the part not covered by cash on a customer's balance, with a ledger entry in the same transaction. Utang sales count as sales on the day they are made; reports show cash sales and utang sales separately, plus utang given, payments collected, and total owed. Payments cannot exceed the balance. Ledger entries are never edited except to mark a payment voided.
+- Sale items snapshot the product name, selling unit, and base unit name. Reports read these snapshots, not the current product.
 - Completed sales are immutable. Use a void or return flow for corrections.
 
 ## 5. Backup, Restore, and Export (V1)

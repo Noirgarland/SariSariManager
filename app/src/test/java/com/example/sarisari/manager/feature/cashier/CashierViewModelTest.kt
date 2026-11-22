@@ -2,10 +2,14 @@ package com.example.sarisari.manager.feature.cashier
 
 import com.example.sarisari.manager.R
 import com.example.sarisari.manager.domain.model.Product
+import com.example.sarisari.manager.domain.model.InsufficientCheckoutStockException
 import com.example.sarisari.manager.domain.model.ProductUnavailableException
+import com.example.sarisari.manager.domain.model.StockShortage
 import com.example.sarisari.manager.domain.model.ProductUnit
 import com.example.sarisari.manager.domain.usecase.CompleteSaleUseCase
+import com.example.sarisari.manager.domain.usecase.SaveCustomerUseCase
 import com.example.sarisari.manager.testing.FakeCategoryRepository
+import com.example.sarisari.manager.testing.FakeCustomerRepository
 import com.example.sarisari.manager.testing.FakeProductRepository
 import com.example.sarisari.manager.testing.FakeSalesRepository
 import com.example.sarisari.manager.testing.MainDispatcherRule
@@ -37,11 +41,14 @@ class CashierViewModelTest {
         sellingPriceCentavos = 2000, stockQuantity = 10, lowStockThreshold = 5,
     )
     private val sales = FakeSalesRepository()
+    private val customers = FakeCustomerRepository()
     private val viewModel by lazy {
         CashierViewModel(
             FakeProductRepository(listOf(coke, chips)),
             FakeCategoryRepository(),
             CompleteSaleUseCase(sales),
+            customers,
+            SaveCustomerUseCase(customers),
         )
     }
 
@@ -165,6 +172,109 @@ class CashierViewModelTest {
             assertEquals(1, state.cart.size)
             assertEquals(R.string.payment_error_unavailable, state.errorRes)
             assertFalse(state.isSaving)
+        }
+    }
+
+    @Test
+    fun insufficientStockKeepsTheCartAndNamesTheProduct() = runTest {
+        collecting {
+            val shortage = StockShortage(2, "Piattos", "pack", availableBaseQuantity = 1, requestedBaseQuantity = 3)
+            sales.failWith = InsufficientCheckoutStockException(listOf(shortage))
+            viewModel.onProductTapped(chips)
+            viewModel.onIncrease("2:pack")
+            viewModel.onIncrease("2:pack")
+            viewModel.onProceedToPayment()
+            viewModel.onReceivedChange("100")
+            viewModel.onCompleteSale()
+
+            assertEquals(CashierStage.PAYMENT, state.stage)
+            assertEquals(R.string.payment_error_insufficient_stock, state.errorRes)
+            assertEquals(listOf(shortage), state.stockShortages)
+            assertFalse(state.isSaving)
+            assertTrue(sales.completed.isEmpty())
+            // The cart is unchanged except that the line now shows the stock read at checkout.
+            val line = state.cart.single()
+            assertEquals(3, line.quantity)
+            assertEquals(2000L, line.unitPriceCentavos)
+            assertEquals(1, line.availableBaseStock)
+            assertTrue(line.exceedsStock)
+
+            // Going back to fix the cart clears the message. After correcting the quantity the sale goes through.
+            viewModel.onBackToCart()
+            assertTrue(state.stockShortages.isEmpty())
+            assertNull(state.errorRes)
+            viewModel.onDecrease("2:pack")
+            viewModel.onDecrease("2:pack")
+            sales.failWith = null
+            viewModel.onProceedToPayment()
+            viewModel.onReceivedChange("20")
+            viewModel.onCompleteSale()
+            assertEquals(CashierStage.COMPLETE, state.stage)
+            assertEquals(1, sales.completed.single().first.single().quantity)
+        }
+    }
+
+    @Test
+    fun utangPaymentUpdatesTheUtangAmountAsCashIsTyped() = runTest {
+        collecting {
+            val juan = customers.addCustomer("Juan")
+            viewModel.onProductTapped(chips)
+            viewModel.onIncrease("2:pack") // total 40.00
+            viewModel.onProceedToPayment()
+            assertEquals(PaymentMethod.CASH, state.paymentMethod)
+
+            // Choosing Utang without a customer opens the picker.
+            viewModel.onPaymentMethodSelected(PaymentMethod.UTANG)
+            assertTrue(state.showCustomerPicker)
+            assertFalse(state.canComplete)
+            viewModel.onCustomerChosen(state.customers.single { it.id == juan })
+            assertFalse(state.showCustomerPicker)
+            assertEquals("Juan", state.customer?.name)
+
+            // Blank cash means everything is utang; it can be completed right away.
+            assertEquals(4_000L, state.creditCentavos)
+            assertTrue(state.canComplete)
+            viewModel.onReceivedChange("15")
+            assertEquals(2_500L, state.creditCentavos)
+            assertEquals(0L, state.changeCentavos)
+            viewModel.onReceivedChange("50")
+            assertEquals(0L, state.creditCentavos)
+            assertEquals(1_000L, state.changeCentavos)
+
+            viewModel.onReceivedChange("15")
+            viewModel.onCompleteSale()
+            assertEquals(CashierStage.COMPLETE, state.stage)
+            assertEquals(juan, sales.creditCustomers.single())
+            assertEquals(1_500L, sales.completed.single().second)
+            assertEquals(2_500L, state.completedSale?.creditCentavos)
+        }
+    }
+
+    @Test
+    fun newCustomerCanBeAddedFromThePickerAndIsSelected() = runTest {
+        collecting {
+            viewModel.onProductTapped(chips)
+            viewModel.onProceedToPayment()
+            viewModel.onPaymentMethodSelected(PaymentMethod.UTANG)
+            viewModel.onAddCustomer(" Maria ")
+            assertEquals("Maria", state.customer?.name)
+            assertFalse(state.showCustomerPicker)
+            viewModel.onCustomerPickerOpened()
+            viewModel.onAddCustomer("maria")
+            assertEquals(R.string.utang_error_name_taken, state.customerErrorRes)
+        }
+    }
+
+    @Test
+    fun closingThePickerWithoutACustomerGoesBackToCash() = runTest {
+        collecting {
+            viewModel.onProductTapped(chips)
+            viewModel.onProceedToPayment()
+            viewModel.onPaymentMethodSelected(PaymentMethod.UTANG)
+            viewModel.onCustomerPickerDismissed()
+            assertEquals(PaymentMethod.CASH, state.paymentMethod)
+            assertFalse(state.canComplete)
+            assertEquals(0L, state.creditCentavos)
         }
     }
 

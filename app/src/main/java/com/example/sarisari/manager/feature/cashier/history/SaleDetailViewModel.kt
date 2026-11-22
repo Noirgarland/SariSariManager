@@ -41,7 +41,10 @@ class SaleDetailViewModel @Inject constructor(
         local.update { Local(isVoiding = true) }
         viewModelScope.launch {
             val failed = try {
-                voidSale(saleId, reason) == VoidResult.NOT_FOUND
+                when (voidSale(saleId, reason)) {
+                    VoidResult.VOIDED, VoidResult.ALREADY_VOIDED -> false
+                    VoidResult.NOT_FOUND, VoidResult.STOCK_LIMIT_EXCEEDED -> true
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {

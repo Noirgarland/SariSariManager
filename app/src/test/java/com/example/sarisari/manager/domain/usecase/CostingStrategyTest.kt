@@ -69,6 +69,32 @@ class CostingStrategyTest {
     }
 
     @Test
+    fun weightedAverageIsExactWhenInventoryValueExceedsLong() {
+        // 10^9 units at 10^11 centavos is 10^20, beyond Long.MAX_VALUE (about 9.2 * 10^18).
+        val stock = 1_000_000_000
+        val cost = 100_000_000_000L
+        // Receiving more at the same cost leaves the average unchanged.
+        assertEquals(cost, weighted.newUnitCost(stock, cost, 1_000_000, 1_000_000 * cost))
+        // Receiving 10^6 free units: 10^20 / (10^9 + 10^6) = 99,900,099,900.0999... -> 99,900,099,900
+        assertEquals(99_900_099_900L, weighted.newUnitCost(stock, cost, 1_000_000, 0))
+        // Half-up on an exact .5 with huge values: (1 * Long.MAX_VALUE + 0) / 2 = ...03.5 -> ...04
+        assertEquals(Long.MAX_VALUE / 2 + 1, weighted.newUnitCost(1, Long.MAX_VALUE, 1, 0))
+    }
+
+    @Test
+    fun divideRoundHalfUpDoesNotOverflowNearLongMax() {
+        assertEquals(Long.MAX_VALUE, divideRoundHalfUp(Long.MAX_VALUE, 1))
+        assertEquals(Long.MAX_VALUE / 2 + 1, divideRoundHalfUp(Long.MAX_VALUE, 2)) // odd / 2 is x.5 -> up
+        assertEquals(1L, divideRoundHalfUp(Long.MAX_VALUE, Long.MAX_VALUE))
+        assertEquals(0L, divideRoundHalfUp(0, 7))
+        assertEquals(1L, divideRoundHalfUp(1, 2))
+        assertEquals(0L, divideRoundHalfUp(1, 3))
+        assertEquals(1L, divideRoundHalfUp(2, 3))
+        assertThrows(IllegalArgumentException::class.java) { divideRoundHalfUp(-1, 2) }
+        assertThrows(IllegalArgumentException::class.java) { divideRoundHalfUp(1, 0) }
+    }
+
+    @Test
     fun rejectsNonPositiveIncomingQuantity() {
         assertThrows(IllegalArgumentException::class.java) { weighted.newUnitCost(1, 1, 0, 1) }
         assertThrows(IllegalArgumentException::class.java) { latest.newUnitCost(1, 1, 0, 1) }

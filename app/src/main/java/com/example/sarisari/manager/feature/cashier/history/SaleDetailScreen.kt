@@ -74,6 +74,12 @@ internal fun SaleDetailContent(uiState: SaleDetailUiState, onBack: () -> Unit, o
                         AmountRow(R.string.sale_detail_total, sale.totalCentavos, bold = true)
                         AmountRow(R.string.sale_detail_received, sale.amountReceivedCentavos)
                         AmountRow(R.string.sale_detail_change, sale.changeCentavos)
+            if (sale.isOnCredit) {
+                AmountRow(R.string.sale_detail_utang, sale.creditCentavos)
+                sale.customerName?.let {
+                    Text(stringResource(R.string.sale_detail_customer, it), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
                         AmountRow(R.string.sale_detail_profit, sale.grossProfitCentavos)
                     }
                 }
@@ -166,7 +172,7 @@ private fun SaleDetailPreview() {
                 isLoading = false,
                 sale = Sale(
                     12, 19_000, 20_000, 1_000, 12_600, 1_700_000_000_000, null, null,
-                    listOf(SaleItem(1, 1, "Coke 1.5L", "bottle", 1, 2, 2, 6500, 13_000, 4500, 9000)),
+                    listOf(SaleItem(1, 1, "Coke 1.5L", "bottle", "bottle", 1, 2, 2, 6500, 13_000, 4500, 9000)),
                 ),
             ),
             onBack = {}, onVoid = {},

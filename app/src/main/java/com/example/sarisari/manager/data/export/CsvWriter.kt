@@ -1,6 +1,7 @@
 package com.example.sarisari.manager.data.export
 
 import java.io.Writer
+import java.math.BigInteger
 
 /**
  * Writes RFC 4180 CSV with CRLF line endings.
@@ -48,10 +49,18 @@ class CsvWriter(private val out: Writer) {
             if (value.isNotEmpty() && value.first() in FORMULA_STARTS) "'$value" else value
 
         /** Centavos to "1234.50" with integer arithmetic, no peso sign or grouping, so spreadsheets can sum it. */
-        fun formatMoney(centavos: Long): String {
-            val sign = if (centavos < 0) "-" else ""
-            val absolute = if (centavos < 0) -centavos else centavos
-            return "$sign${absolute / 100}.${(absolute % 100).toString().padStart(2, '0')}"
+        fun formatMoney(centavos: Long): String = formatMoney(BigInteger.valueOf(centavos))
+
+        /** [quantity] times [unitCentavos], computed exactly, so a large stock value cannot overflow. */
+        fun moneyTimes(quantity: Long, unitCentavos: Long): Cell =
+            NumberCell(formatMoney(BigInteger.valueOf(quantity) * BigInteger.valueOf(unitCentavos)))
+
+        private val HUNDRED = BigInteger.valueOf(100)
+
+        private fun formatMoney(centavos: BigInteger): String {
+            val sign = if (centavos.signum() < 0) "-" else ""
+            val (whole, cents) = centavos.abs().divideAndRemainder(HUNDRED)
+            return "$sign$whole.${cents.toString().padStart(2, '0')}"
         }
     }
 }

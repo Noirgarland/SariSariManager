@@ -48,6 +48,7 @@ SariSariManager/
 |           |   |-- inventory/
 |           |   |-- expenses/
 |           |   |-- reports/
+|           |   |-- utang/          customers, balances, payments (opened from More)
 |           |   `-- settings/       costing method, backup, restore, export
 |           |-- di/                 Hilt modules
 |           |-- MainActivity.kt
@@ -168,7 +169,9 @@ The V1 database supports:
 - Settings (including the costing method and store name)
 - Store Sessions (open and close times)
 
-Deferred until their modules are approved: Suppliers, Purchases and Purchase Items (beyond stock receipts), and Customers.
+- Customers and Credit Entries (the utang ledger; a balance is the sum of a customer's entries)
+
+Deferred until their modules are approved: Suppliers, and Purchases and Purchase Items (beyond stock receipts).
 
 Add database entities and DAOs incrementally as each feature is implemented.
 

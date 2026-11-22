@@ -3,6 +3,7 @@ package com.example.sarisari.manager.feature.products
 import androidx.lifecycle.SavedStateHandle
 import com.example.sarisari.manager.domain.model.Product
 import com.example.sarisari.manager.domain.model.ProductUnit
+import com.example.sarisari.manager.domain.model.StockStatus
 import com.example.sarisari.manager.domain.usecase.ProductError
 import com.example.sarisari.manager.domain.usecase.SaveProductUseCase
 import com.example.sarisari.manager.testing.FakeCategoryRepository
@@ -48,6 +49,57 @@ class ProductEditViewModelTest {
         assertFalse(state.isEditing)
         assertEquals("", state.name)
         assertEquals("5", state.threshold)
+    }
+
+    private fun fillValidNewProduct(vm: ProductEditViewModel) {
+        vm.onNameChange("Sprite")
+        vm.onBaseUnitChange("bottle")
+        vm.onCostChange("40")
+        vm.onPriceChange("60")
+    }
+
+    @Test
+    fun newProductSavesTheStockTypedAsOpeningStock() {
+        val vm = viewModel(null)
+        fillValidNewProduct(vm)
+        vm.onThresholdChange("10")
+        vm.onAddUnit()
+        vm.onUnitChange(0, UnitForm("case", "24", "1300"))
+        vm.onOpeningStockChange("120")
+        vm.onSave()
+        assertTrue(vm.uiState.value.isDone)
+        val saved = products.products.value.single { it.name == "Sprite" }
+        assertEquals(120, saved.stockQuantity)
+        assertEquals(10, saved.lowStockThreshold)
+        // The pack size is not stock, and 120 bottles is well above the warning level.
+        assertEquals(24, saved.units.single().baseQuantity)
+        assertEquals(StockStatus.IN_STOCK, saved.stockStatus)
+    }
+
+    @Test
+    fun blankOpeningStockMeansZeroAndBadValuesAreRejected() {
+        val vm = viewModel(null)
+        fillValidNewProduct(vm)
+        vm.onOpeningStockChange("12.5")
+        vm.onSave()
+        assertEquals(setOf(ProductError.OPENING_STOCK_INVALID), vm.uiState.value.errors)
+        vm.onOpeningStockChange("-3")
+        vm.onSave()
+        assertEquals(setOf(ProductError.OPENING_STOCK_INVALID), vm.uiState.value.errors)
+        vm.onOpeningStockChange(" ")
+        vm.onSave()
+        assertTrue(vm.uiState.value.isDone)
+        assertEquals(0, products.products.value.single { it.name == "Sprite" }.stockQuantity)
+    }
+
+    @Test
+    fun editingShowsStockOnHandAndKeepsIt() {
+        val vm = viewModel(7)
+        assertEquals(12, vm.uiState.value.stockOnHand)
+        vm.onOpeningStockChange("999") // ignored for an existing product
+        vm.onSave()
+        assertTrue(vm.uiState.value.isDone)
+        assertEquals(12, products.products.value.single { it.id == 7L }.stockQuantity)
     }
 
     @Test

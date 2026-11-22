@@ -9,6 +9,7 @@ fun NavGraphBuilder.dashboardScreen(
     onAddStock: () -> Unit,
     onAddExpense: () -> Unit,
     onSeeReports: () -> Unit,
+    onOpenUtang: () -> Unit,
 ) {
     composable<DashboardRoute> {
         DashboardScreen(
@@ -16,6 +17,7 @@ fun NavGraphBuilder.dashboardScreen(
             onAddStock = onAddStock,
             onAddExpense = onAddExpense,
             onSeeReports = onSeeReports,
+            onOpenUtang = onOpenUtang,
         )
     }
 }

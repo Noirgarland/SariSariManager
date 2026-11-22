@@ -70,6 +70,12 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
     val productsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
         uri?.let { viewModel.onProductsExportDestination(it.toString()) }
     }
+    val utangBalancesLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        uri?.let { viewModel.onUtangBalancesExportDestination(it.toString()) }
+    }
+    val utangHistoryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        uri?.let { viewModel.onUtangHistoryExportDestination(it.toString()) }
+    }
 
     SettingsContent(
         uiState = uiState,
@@ -87,6 +93,8 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
             onNextMonth = viewModel::onNextMonth,
             onExportSales = { salesLauncher.launch(viewModel.suggestedSalesExportName()) },
             onExportProducts = { productsLauncher.launch(viewModel.suggestedProductsExportName()) },
+            onExportUtangBalances = { utangBalancesLauncher.launch(viewModel.suggestedUtangBalancesExportName()) },
+            onExportUtangHistory = { utangHistoryLauncher.launch(viewModel.suggestedUtangHistoryExportName()) },
             onMessageShown = viewModel::onMessageShown,
         ),
     )
@@ -106,6 +114,8 @@ internal data class SettingsActions(
     val onNextMonth: () -> Unit = {},
     val onExportSales: () -> Unit = {},
     val onExportProducts: () -> Unit = {},
+    val onExportUtangBalances: () -> Unit = {},
+    val onExportUtangHistory: () -> Unit = {},
     val onMessageShown: () -> Unit = {},
 )
 
@@ -209,6 +219,16 @@ internal fun SettingsContent(uiState: SettingsUiState, actions: SettingsActions)
                     enabled = !uiState.isBusy,
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                 ) { Text(stringResource(R.string.settings_export_products)) }
+                OutlinedButton(
+                    onClick = actions.onExportUtangBalances,
+                    enabled = !uiState.isBusy,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text(stringResource(R.string.settings_export_utang_balances)) }
+                OutlinedButton(
+                    onClick = actions.onExportUtangHistory,
+                    enabled = !uiState.isBusy,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text(stringResource(R.string.settings_export_utang_history)) }
             }
         }
     }

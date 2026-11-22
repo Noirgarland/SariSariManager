@@ -3,6 +3,7 @@ package com.example.sarisari.manager.data.local.dao
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Query
+import com.example.sarisari.manager.data.local.entity.CustomerSummaryRow
 
 data class SaleExportRow(
     @ColumnInfo(name = "item_id") val itemId: Long,
@@ -28,6 +29,18 @@ data class ProductExportRow(
     @ColumnInfo(name = "stock_quantity") val stockQuantity: Int,
     @ColumnInfo(name = "low_stock_threshold") val lowStockThreshold: Int,
     @ColumnInfo(name = "is_archived") val isArchived: Boolean,
+)
+
+data class CreditEntryExportRow(
+    @ColumnInfo(name = "id") val id: Long,
+    @ColumnInfo(name = "customer_name") val customerName: String,
+    @ColumnInfo(name = "type") val type: String,
+    @ColumnInfo(name = "amount_centavos") val amountCentavos: Long,
+    @ColumnInfo(name = "sale_id") val saleId: Long?,
+    @ColumnInfo(name = "note") val note: String?,
+    @ColumnInfo(name = "occurred_at") val occurredAt: Long,
+    @ColumnInfo(name = "voided_at") val voidedAt: Long?,
+    @ColumnInfo(name = "balance_after") val balanceAfter: Long,
 )
 
 /** Paged reads for CSV export, so large exports are streamed instead of loaded at once. */
@@ -56,4 +69,35 @@ interface ExportDao {
         """
     )
     suspend fun productsPage(afterId: Long, limit: Int): List<ProductExportRow>
+
+    /** Customers in id order with balance and latest dates, a page at a time. */
+    @Query(
+        """
+        SELECT c.id, c.name,
+               COALESCE((SELECT SUM(e.amount_centavos) FROM credit_entries e WHERE e.customer_id = c.id), 0) AS balance,
+               (SELECT MAX(e.occurred_at) FROM credit_entries e
+                 WHERE e.customer_id = c.id AND e.type = 'CREDIT_SALE') AS last_credit_at,
+               (SELECT MAX(e.occurred_at) FROM credit_entries e
+                 WHERE e.customer_id = c.id AND e.type = 'PAYMENT' AND e.voided_at IS NULL) AS last_payment_at
+        FROM customers c
+        WHERE c.id > :afterId
+        ORDER BY c.id
+        LIMIT :limit
+        """
+    )
+    suspend fun customersPage(afterId: Long, limit: Int): List<CustomerSummaryRow>
+
+    /** Every ledger entry in id order, with the customer's running balance after it. */
+    @Query(
+        """
+        SELECT e.id, c.name AS customer_name, e.type, e.amount_centavos, e.sale_id, e.note, e.occurred_at, e.voided_at,
+               (SELECT SUM(x.amount_centavos) FROM credit_entries x WHERE x.customer_id = e.customer_id AND x.id <= e.id)
+                   AS balance_after
+        FROM credit_entries e JOIN customers c ON c.id = e.customer_id
+        WHERE e.id > :afterId
+        ORDER BY e.id
+        LIMIT :limit
+        """
+    )
+    suspend fun creditEntriesPage(afterId: Long, limit: Int): List<CreditEntryExportRow>
 }

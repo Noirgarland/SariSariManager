@@ -55,6 +55,15 @@ class SettingsViewModelTest {
             return ExportOutcome.Success(42)
         }
         override suspend fun exportProducts(destinationUri: String): ExportOutcome = ExportOutcome.Failure
+        var utangExports = 0
+        override suspend fun exportUtangBalances(destinationUri: String): ExportOutcome {
+            utangExports++
+            return ExportOutcome.Success(3)
+        }
+        override suspend fun exportUtangHistory(destinationUri: String): ExportOutcome {
+            utangExports++
+            return ExportOutcome.Success(7)
+        }
     }
 
     private val settings = FakeSettingsRepository(

@@ -57,6 +57,7 @@ class ProductEditViewModel @Inject constructor(
                         cost = Money.toInputText(product.costCentavos),
                         price = Money.toInputText(product.sellingPriceCentavos),
                         threshold = product.lowStockThreshold.toString(),
+                        stockOnHand = product.stockQuantity,
                         units = product.units.map {
                             UnitForm(it.name, it.baseQuantity.toString(), Money.toInputText(it.sellingPriceCentavos))
                         },
@@ -72,6 +73,7 @@ class ProductEditViewModel @Inject constructor(
     fun onCostChange(value: String) = edit { it.copy(cost = value) }
     fun onPriceChange(value: String) = edit { it.copy(price = value) }
     fun onThresholdChange(value: String) = edit { it.copy(threshold = value) }
+    fun onOpeningStockChange(value: String) = edit { it.copy(openingStock = value) }
     fun onAddUnit() = edit { it.copy(units = it.units + UnitForm()) }
     fun onRemoveUnit(index: Int) = edit { it.copy(units = it.units.filterIndexed { i, _ -> i != index }) }
     fun onUnitChange(index: Int, unit: UnitForm) =
@@ -89,6 +91,10 @@ class ProductEditViewModel @Inject constructor(
         val price = Money.parse(state.price) ?: 0L.also { parseErrors += ProductError.PRICE_INVALID }
         val threshold = state.threshold.trim().toIntOrNull()
             ?: 0.also { parseErrors += ProductError.THRESHOLD_INVALID }
+        // Editing keeps the stock as it is; it only changes through Inventory.
+        val openingStock = loaded?.stockQuantity
+            ?: state.openingStock.trim().ifEmpty { "0" }.toIntOrNull()
+            ?: 0.also { parseErrors += ProductError.OPENING_STOCK_INVALID }
         val units = state.units.map { form ->
             ProductUnit(
                 name = form.name,
@@ -105,7 +111,7 @@ class ProductEditViewModel @Inject constructor(
             baseUnitName = state.baseUnit,
             costCentavos = cost,
             sellingPriceCentavos = price,
-            stockQuantity = loaded?.stockQuantity ?: 0,
+            stockQuantity = openingStock,
             lowStockThreshold = threshold,
             isArchived = loaded?.isArchived ?: false,
             units = units,

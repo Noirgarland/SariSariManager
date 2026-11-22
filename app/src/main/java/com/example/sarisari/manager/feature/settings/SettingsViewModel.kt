@@ -147,6 +147,18 @@ class SettingsViewModel @Inject constructor(
         it.copy(message = exportMessage(exports.exportProducts(uri)))
     }
 
+    fun suggestedUtangBalancesExportName(): String = "utang-balances-${Dates.fileStamp(clock.millis())}.csv"
+
+    fun suggestedUtangHistoryExportName(): String = "utang-history-${Dates.fileStamp(clock.millis())}.csv"
+
+    fun onUtangBalancesExportDestination(uri: String) = runTask(SettingsTask.EXPORT) {
+        it.copy(message = exportMessage(exports.exportUtangBalances(uri)))
+    }
+
+    fun onUtangHistoryExportDestination(uri: String) = runTask(SettingsTask.EXPORT) {
+        it.copy(message = exportMessage(exports.exportUtangHistory(uri)))
+    }
+
     private fun exportMessage(outcome: ExportOutcome) = when (outcome) {
         is ExportOutcome.Success -> SettingsMessage.ExportDone(outcome.rowCount)
         ExportOutcome.Failure -> SettingsMessage.ExportFailed

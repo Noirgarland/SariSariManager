@@ -5,38 +5,43 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
-// Brand palette: store-friendly green (primary), teal (secondary), warm amber (tertiary).
+// Brand palette: deep store green (primary), fresh green (secondary), warm amber (tertiary).
+// The light scheme uses white cards on a very light green-gray background for a bright, clean look.
 
 // Light
-private val GreenPrimaryLight = Color(0xFF14513A)
+private val GreenPrimaryLight = Color(0xFF1B5E3B)
 private val GreenOnPrimaryLight = Color(0xFFFFFFFF)
-private val GreenPrimaryContainerLight = Color(0xFFA6F4B4)
-private val GreenOnPrimaryContainerLight = Color(0xFF00210D)
-private val TealSecondaryLight = Color(0xFF006A6A)
-private val TealOnSecondaryLight = Color(0xFFFFFFFF)
-private val TealSecondaryContainerLight = Color(0xFF9CF1F0)
-private val TealOnSecondaryContainerLight = Color(0xFF002020)
-private val AmberTertiaryLight = Color(0xFF7A5900)
+private val GreenPrimaryContainerLight = Color(0xFFDDF3E4)
+private val GreenOnPrimaryContainerLight = Color(0xFF0E3B24)
+private val GreenSecondaryLight = Color(0xFF2E7D4F)
+private val GreenOnSecondaryLight = Color(0xFFFFFFFF)
+private val GreenSecondaryContainerLight = Color(0xFFE8F5EC)
+private val GreenOnSecondaryContainerLight = Color(0xFF14432B)
+private val AmberTertiaryLight = Color(0xFF8A5A00)
 private val AmberOnTertiaryLight = Color(0xFFFFFFFF)
-private val AmberTertiaryContainerLight = Color(0xFFFFE08A)
-private val AmberOnTertiaryContainerLight = Color(0xFF261900)
-private val ErrorLight = Color(0xFFBA1A1A)
+private val AmberTertiaryContainerLight = Color(0xFFFFE7A8)
+private val AmberOnTertiaryContainerLight = Color(0xFF5A3A00)
+private val ErrorLight = Color(0xFFC62828)
 private val OnErrorLight = Color(0xFFFFFFFF)
-private val BackgroundLight = Color(0xFFFAF6EA)
-private val OnBackgroundLight = Color(0xFF191C19)
-private val SurfaceVariantLight = Color(0xFFDDE5DB)
-private val OnSurfaceVariantLight = Color(0xFF414941)
-private val OutlineLight = Color(0xFF717971)
+private val ErrorContainerLight = Color(0xFFFDE2E1)
+private val OnErrorContainerLight = Color(0xFF8C1D18)
+private val BackgroundLight = Color(0xFFF4F7F4)
+private val OnBackgroundLight = Color(0xFF17201B)
+private val SurfaceLight = Color(0xFFFFFFFF)
+private val SurfaceVariantLight = Color(0xFFEEF3EF)
+private val OnSurfaceVariantLight = Color(0xFF55615A)
+private val OutlineLight = Color(0xFF8A968F)
+private val OutlineVariantLight = Color(0xFFDDE5DF)
 
 // Dark
 private val GreenPrimaryDark = Color(0xFF8BD79A)
 private val GreenOnPrimaryDark = Color(0xFF00391B)
 private val GreenPrimaryContainerDark = Color(0xFF00522A)
 private val GreenOnPrimaryContainerDark = Color(0xFFA6F4B4)
-private val TealSecondaryDark = Color(0xFF80D5D4)
-private val TealOnSecondaryDark = Color(0xFF003737)
-private val TealSecondaryContainerDark = Color(0xFF004F4F)
-private val TealOnSecondaryContainerDark = Color(0xFF9CF1F0)
+private val GreenSecondaryDark = Color(0xFF9CD6AE)
+private val GreenOnSecondaryDark = Color(0xFF00391E)
+private val GreenSecondaryContainerDark = Color(0xFF1F4D32)
+private val GreenOnSecondaryContainerDark = Color(0xFFB8F0C8)
 private val AmberTertiaryDark = Color(0xFFF5BF48)
 private val AmberOnTertiaryDark = Color(0xFF402D00)
 private val AmberTertiaryContainerDark = Color(0xFF5C4300)
@@ -54,23 +59,31 @@ internal val LightBrandColorScheme: ColorScheme = lightColorScheme(
     onPrimary = GreenOnPrimaryLight,
     primaryContainer = GreenPrimaryContainerLight,
     onPrimaryContainer = GreenOnPrimaryContainerLight,
-    secondary = TealSecondaryLight,
-    onSecondary = TealOnSecondaryLight,
-    secondaryContainer = TealSecondaryContainerLight,
-    onSecondaryContainer = TealOnSecondaryContainerLight,
+    secondary = GreenSecondaryLight,
+    onSecondary = GreenOnSecondaryLight,
+    secondaryContainer = GreenSecondaryContainerLight,
+    onSecondaryContainer = GreenOnSecondaryContainerLight,
     tertiary = AmberTertiaryLight,
     onTertiary = AmberOnTertiaryLight,
     tertiaryContainer = AmberTertiaryContainerLight,
     onTertiaryContainer = AmberOnTertiaryContainerLight,
     error = ErrorLight,
     onError = OnErrorLight,
+    errorContainer = ErrorContainerLight,
+    onErrorContainer = OnErrorContainerLight,
     background = BackgroundLight,
     onBackground = OnBackgroundLight,
     surface = BackgroundLight,
     onSurface = OnBackgroundLight,
     surfaceVariant = SurfaceVariantLight,
     onSurfaceVariant = OnSurfaceVariantLight,
-    outline = OutlineLight
+    outline = OutlineLight,
+    outlineVariant = OutlineVariantLight,
+    surfaceContainerLowest = SurfaceLight,
+    surfaceContainerLow = SurfaceLight,
+    surfaceContainer = SurfaceLight,
+    surfaceContainerHigh = SurfaceLight,
+    surfaceContainerHighest = SurfaceVariantLight,
 )
 
 internal val DarkBrandColorScheme: ColorScheme = darkColorScheme(
@@ -78,10 +91,10 @@ internal val DarkBrandColorScheme: ColorScheme = darkColorScheme(
     onPrimary = GreenOnPrimaryDark,
     primaryContainer = GreenPrimaryContainerDark,
     onPrimaryContainer = GreenOnPrimaryContainerDark,
-    secondary = TealSecondaryDark,
-    onSecondary = TealOnSecondaryDark,
-    secondaryContainer = TealSecondaryContainerDark,
-    onSecondaryContainer = TealOnSecondaryContainerDark,
+    secondary = GreenSecondaryDark,
+    onSecondary = GreenOnSecondaryDark,
+    secondaryContainer = GreenSecondaryContainerDark,
+    onSecondaryContainer = GreenOnSecondaryContainerDark,
     tertiary = AmberTertiaryDark,
     onTertiary = AmberOnTertiaryDark,
     tertiaryContainer = AmberTertiaryContainerDark,
@@ -94,5 +107,5 @@ internal val DarkBrandColorScheme: ColorScheme = darkColorScheme(
     onSurface = OnBackgroundDark,
     surfaceVariant = SurfaceVariantDark,
     onSurfaceVariant = OnSurfaceVariantDark,
-    outline = OutlineDark
+    outline = OutlineDark,
 )

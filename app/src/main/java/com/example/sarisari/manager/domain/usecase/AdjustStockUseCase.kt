@@ -1,6 +1,7 @@
 package com.example.sarisari.manager.domain.usecase
 
 import com.example.sarisari.manager.domain.model.InsufficientStockException
+import com.example.sarisari.manager.domain.model.StockLimitExceededException
 import com.example.sarisari.manager.domain.model.StockMovementType
 import com.example.sarisari.manager.domain.repository.InventoryRepository
 import javax.inject.Inject
@@ -35,6 +36,8 @@ class AdjustStockUseCase @Inject constructor(
             StockEntryResult.Saved
         } catch (_: InsufficientStockException) {
             StockEntryResult.Invalid(StockEntryError.INSUFFICIENT_STOCK)
+        } catch (_: StockLimitExceededException) {
+            StockEntryResult.Invalid(StockEntryError.STOCK_LIMIT_EXCEEDED)
         }
     }
 }

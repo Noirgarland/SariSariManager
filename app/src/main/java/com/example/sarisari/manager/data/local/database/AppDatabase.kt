@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.sarisari.manager.data.local.dao.AppSettingDao
 import com.example.sarisari.manager.data.local.dao.CategoryDao
+import com.example.sarisari.manager.data.local.dao.CustomerDao
 import com.example.sarisari.manager.data.local.dao.ExpenseDao
 import com.example.sarisari.manager.data.local.dao.ExportDao
 import com.example.sarisari.manager.data.local.dao.ReportDao
@@ -13,6 +14,8 @@ import com.example.sarisari.manager.data.local.dao.SaleDao
 import com.example.sarisari.manager.data.local.dao.StockMovementDao
 import com.example.sarisari.manager.data.local.entity.AppSettingEntity
 import com.example.sarisari.manager.data.local.entity.CategoryEntity
+import com.example.sarisari.manager.data.local.entity.CreditEntryEntity
+import com.example.sarisari.manager.data.local.entity.CustomerEntity
 import com.example.sarisari.manager.data.local.entity.ExpenseEntity
 import com.example.sarisari.manager.data.local.entity.StoreSessionEntity
 import com.example.sarisari.manager.data.local.entity.ProductEntity
@@ -32,6 +35,8 @@ import com.example.sarisari.manager.data.local.entity.StockMovementEntity
         SaleItemEntity::class,
         ExpenseEntity::class,
         StoreSessionEntity::class,
+        CustomerEntity::class,
+        CreditEntryEntity::class,
     ],
     version = AppDatabase.VERSION,
     exportSchema = true,
@@ -46,8 +51,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun expenseDao(): ExpenseDao
     abstract fun storeSessionDao(): StoreSessionDao
     abstract fun exportDao(): ExportDao
+    abstract fun customerDao(): CustomerDao
 
     companion object {
-        const val VERSION = 5
+        const val VERSION = 7
     }
 }

@@ -24,4 +24,10 @@ interface ExportRepository {
     /** One row per sale item in [startMillis, endMillis). */
     suspend fun exportSales(destinationUri: String, startMillis: Long, endMillis: Long): ExportOutcome
     suspend fun exportProducts(destinationUri: String): ExportOutcome
+
+    /** One row per customer: balance, last utang date, last payment date. */
+    suspend fun exportUtangBalances(destinationUri: String): ExportOutcome
+
+    /** One row per utang ledger entry, with the running balance. */
+    suspend fun exportUtangHistory(destinationUri: String): ExportOutcome
 }

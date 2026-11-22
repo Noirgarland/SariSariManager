@@ -3,6 +3,8 @@ package com.example.sarisari.manager.di
 import com.example.sarisari.manager.data.backup.BackupRepositoryImpl
 import com.example.sarisari.manager.data.export.ExportRepositoryImpl
 import com.example.sarisari.manager.data.repository.CategoryRepositoryImpl
+import com.example.sarisari.manager.data.repository.CustomerRepositoryImpl
+import com.example.sarisari.manager.domain.repository.CustomerRepository
 import com.example.sarisari.manager.data.repository.ExpenseRepositoryImpl
 import com.example.sarisari.manager.data.repository.ReportRepositoryImpl
 import com.example.sarisari.manager.data.repository.StoreSessionRepositoryImpl
@@ -58,4 +60,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindExportRepository(impl: ExportRepositoryImpl): ExportRepository
+
+    @Binds
+    abstract fun bindCustomerRepository(impl: CustomerRepositoryImpl): CustomerRepository
 }
