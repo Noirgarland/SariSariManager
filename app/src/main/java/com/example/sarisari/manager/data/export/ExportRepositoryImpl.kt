@@ -29,6 +29,12 @@ class ExportRepositoryImpl @Inject constructor(
     override suspend fun exportProducts(destinationUri: String): ExportOutcome =
         writeTo(destinationUri) { writeProducts(it) }
 
+    override suspend fun exportUtangBalances(destinationUri: String): ExportOutcome =
+        writeTo(destinationUri) { writeUtangBalances(it) }
+
+    override suspend fun exportUtangHistory(destinationUri: String): ExportOutcome =
+        writeTo(destinationUri) { writeUtangHistory(it) }
+
     private suspend fun writeTo(destinationUri: String, write: suspend (Writer) -> Int): ExportOutcome = withContext(io) {
         try {
             val stream = context.contentResolver.openOutputStream(Uri.parse(destinationUri), "wt")
@@ -108,7 +114,67 @@ class ExportRepositoryImpl @Inject constructor(
         return count
     }
 
+    /** Writes every customer with what they owe. Returns the number of data rows. Visible for tests. */
+    internal suspend fun writeUtangBalances(writer: Writer): Int {
+        val csv = CsvWriter(writer)
+        csv.writeByteOrderMark()
+        csv.header("Customer", "Balance", "Status", "Last utang date", "Last payment date")
+        var after = 0L
+        var count = 0
+        while (true) {
+            val page = dao.customersPage(after, PAGE_SIZE)
+            if (page.isEmpty()) break
+            page.forEach { row ->
+                csv.row(
+                    CsvWriter.text(row.name),
+                    CsvWriter.money(row.balanceCentavos),
+                    CsvWriter.text(if (row.balanceCentavos > 0) "Unpaid" else "Paid"),
+                    CsvWriter.text(row.lastCreditAt?.let { DATE.format(Instant.ofEpochMilli(it)) }),
+                    CsvWriter.text(row.lastPaymentAt?.let { DATE.format(Instant.ofEpochMilli(it)) }),
+                )
+            }
+            count += page.size
+            after = page.last().id
+        }
+        return count
+    }
+
+    /** Writes every utang ledger entry, oldest first. Returns the number of data rows. Visible for tests. */
+    internal suspend fun writeUtangHistory(writer: Writer): Int {
+        val csv = CsvWriter(writer)
+        csv.writeByteOrderMark()
+        csv.header("Date and time", "Customer", "Type", "Amount", "Balance after", "Sale number", "Note", "Status")
+        var after = 0L
+        var count = 0
+        while (true) {
+            val page = dao.creditEntriesPage(after, PAGE_SIZE)
+            if (page.isEmpty()) break
+            page.forEach { row ->
+                csv.row(
+                    CsvWriter.text(DATE_TIME.format(Instant.ofEpochMilli(row.occurredAt))),
+                    CsvWriter.text(row.customerName),
+                    CsvWriter.text(ENTRY_LABELS[row.type] ?: row.type),
+                    CsvWriter.money(row.amountCentavos),
+                    CsvWriter.money(row.balanceAfter),
+                    CsvWriter.text(row.saleId?.toString()),
+                    CsvWriter.text(row.note),
+                    CsvWriter.text(if (row.voidedAt == null) "" else "Voided"),
+                )
+            }
+            count += page.size
+            after = page.last().id
+        }
+        return count
+    }
+
     private companion object {
+        val DATE: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).withZone(StoreTime.ZONE)
+        val ENTRY_LABELS = mapOf(
+            "CREDIT_SALE" to "Utang sale",
+            "PAYMENT" to "Payment",
+            "SALE_VOID" to "Sale voided",
+            "PAYMENT_VOID" to "Payment voided",
+        )
         const val PAGE_SIZE = 500
         val DATE_TIME: DateTimeFormatter =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.ENGLISH).withZone(StoreTime.ZONE)

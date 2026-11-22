@@ -6,6 +6,7 @@ import com.example.sarisari.manager.R
 import com.example.sarisari.manager.domain.model.StockStatus
 import com.example.sarisari.manager.domain.model.StoreSettings
 import com.example.sarisari.manager.domain.model.StoreTime
+import com.example.sarisari.manager.domain.repository.CustomerRepository
 import com.example.sarisari.manager.domain.repository.ProductRepository
 import com.example.sarisari.manager.domain.repository.ReportRepository
 import com.example.sarisari.manager.domain.repository.SettingsRepository
@@ -36,6 +37,7 @@ class DashboardViewModel @Inject constructor(
     products: ProductRepository,
     private val settings: SettingsRepository,
     sessions: StoreSessionRepository,
+    customers: CustomerRepository,
     private val storeSession: StoreSessionUseCase,
     private val clock: Clock,
 ) : ViewModel() {
@@ -53,13 +55,16 @@ class DashboardViewModel @Inject constructor(
     private val lowStockCount = products.observeProducts("", categoryId = null, includeArchived = false)
         .map { list -> list.count { it.stockStatus != StockStatus.IN_STOCK } }
 
+    /** Low-stock count and what customers owe, combined so the main combine stays at five flows. */
+    private val counts = combine(lowStockCount, customers.observeOutstandingTotal()) { low, utang -> low to utang }
+
     val uiState: StateFlow<DashboardUiState> = combine(
         todayData,
-        lowStockCount,
+        counts,
         settings.observeSetting(StoreSettings.STORE_NAME_KEY),
         sessions.observeLatestSession(),
         timeDialog,
-    ) { (day, summary, top), lowStock, name, session, dialog ->
+    ) { (day, summary, top), (lowStock, outstanding), name, session, dialog ->
         DashboardUiState(
             isLoading = false,
             storeName = name?.value?.takeIf { it.isNotBlank() },
@@ -68,6 +73,7 @@ class DashboardViewModel @Inject constructor(
             todayStartMillis = day.startMillis,
             today = summary,
             lowStockCount = lowStock,
+            outstandingUtangCentavos = outstanding,
             topProducts = top,
             timeDialog = dialog,
         )

@@ -48,7 +48,12 @@ data class Sale(
     val voidedAtMillis: Long?,
     val voidReason: String?,
     val items: List<SaleItem>,
+    /** The part of the total put on the customer's utang. 0 for a cash sale. */
+    val creditCentavos: Long = 0,
+    val customerId: Long? = null,
+    val customerName: String? = null,
 ) {
+    val isOnCredit: Boolean get() = creditCentavos > 0
     val isVoided: Boolean get() = voidedAtMillis != null
     val grossProfitCentavos: Long get() = totalCentavos - totalCostCentavos
 }
@@ -59,4 +64,20 @@ data class CompletedSale(
     val amountReceivedCentavos: Long,
     val changeCentavos: Long,
     val createdAtMillis: Long,
+    val creditCentavos: Long = 0,
+    val customerName: String? = null,
 )
+
+/**
+ * How a sale is paid. [Cash] needs at least the total. [Utang] takes any cash now, including none,
+ * and puts the rest on the customer's balance.
+ */
+sealed interface SalePayment {
+    val amountReceivedCentavos: Long
+
+    data class Cash(override val amountReceivedCentavos: Long) : SalePayment
+    data class Utang(val customerId: Long, override val amountReceivedCentavos: Long) : SalePayment
+}
+
+/** The utang part of a sale: what the cash does not cover. Never negative. */
+fun creditFor(totalCentavos: Long, amountReceivedCentavos: Long): Long = maxOf(0L, totalCentavos - amountReceivedCentavos)

@@ -47,7 +47,11 @@ import com.example.sarisari.manager.core.designsystem.SearchField
 import com.example.sarisari.manager.core.designsystem.SurfaceCard
 import com.example.sarisari.manager.core.util.Money
 import com.example.sarisari.manager.domain.model.CompletedSale
+import com.example.sarisari.manager.domain.model.Customer
 import com.example.sarisari.manager.domain.model.Product
+import com.example.sarisari.manager.feature.cashier.components.CustomerPickerDialog
+import com.example.sarisari.manager.feature.cashier.components.PaymentMethodSelector
+import com.example.sarisari.manager.feature.cashier.components.UtangCustomerCard
 import com.example.sarisari.manager.feature.cashier.components.AmountKeypad
 import com.example.sarisari.manager.feature.cashier.components.AmountKeypadInput
 import com.example.sarisari.manager.feature.cashier.components.CartPanel
@@ -78,6 +82,12 @@ fun CashierScreen(viewModel: CashierViewModel = hiltViewModel()) {
             onQuickCash = viewModel::onQuickCash,
             onCompleteSale = viewModel::onCompleteSale,
             onNewSale = viewModel::onNewSale,
+            onPaymentMethodSelected = viewModel::onPaymentMethodSelected,
+            onCustomerPickerOpened = viewModel::onCustomerPickerOpened,
+            onCustomerPickerDismissed = viewModel::onCustomerPickerDismissed,
+            onCustomerQueryChange = viewModel::onCustomerQueryChange,
+            onCustomerChosen = viewModel::onCustomerChosen,
+            onAddCustomer = viewModel::onAddCustomer,
         ),
     )
 }
@@ -100,6 +110,12 @@ internal data class CashierActions(
     val onQuickCash: (Long) -> Unit = {},
     val onCompleteSale: () -> Unit = {},
     val onNewSale: () -> Unit = {},
+    val onPaymentMethodSelected: (PaymentMethod) -> Unit = {},
+    val onCustomerPickerOpened: () -> Unit = {},
+    val onCustomerPickerDismissed: () -> Unit = {},
+    val onCustomerQueryChange: (String) -> Unit = {},
+    val onCustomerChosen: (Customer) -> Unit = {},
+    val onAddCustomer: (String) -> Unit = {},
 )
 
 @Composable
@@ -202,8 +218,14 @@ private fun PaymentContent(uiState: CashierUiState, actions: CashierActions) {
                 )
             }
             Text(stringResource(R.string.payment_method_title), style = MaterialTheme.typography.titleMedium)
-            PaymentMethodCash()
-            Text(stringResource(R.string.payment_received_label), style = MaterialTheme.typography.titleMedium)
+            PaymentMethodSelector(uiState.paymentMethod, actions.onPaymentMethodSelected)
+            if (uiState.isUtang) {
+                UtangCustomerCard(uiState.customer, actions.onCustomerPickerOpened)
+            }
+            Text(
+                stringResource(if (uiState.isUtang) R.string.payment_cash_now_label else R.string.payment_received_label),
+                style = MaterialTheme.typography.titleMedium,
+            )
             ReceivedAmountDisplay(uiState.receivedText)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item {
@@ -213,7 +235,9 @@ private fun PaymentContent(uiState: CashierUiState, actions: CashierActions) {
                         modifier = Modifier.heightIn(min = 48.dp),
                     ) { Text(stringResource(R.string.payment_exact)) }
                 }
-                items(quickCashPesos.filter { it * 100 >= uiState.totalCentavos }.take(4)) { pesos ->
+                // On utang the owner may take part of the total now, so smaller notes are offered too.
+                val quick = if (uiState.isUtang) quickCashPesos else quickCashPesos.filter { it * 100 >= uiState.totalCentavos }
+                items(quick.take(if (uiState.isUtang) quickCashPesos.size else 4)) { pesos ->
                     OutlinedButton(
                         onClick = { actions.onQuickCash(pesos * 100) },
                         shape = CardShape,
@@ -222,8 +246,15 @@ private fun PaymentContent(uiState: CashierUiState, actions: CashierActions) {
                 }
             }
             AmountKeypad(onKey = { key -> actions.onReceivedChange(AmountKeypadInput.press(uiState.receivedText, key)) })
-            ChangeCard(uiState.changeCentavos)
-            if (uiState.receivedText.isNotBlank() && uiState.changeCentavos == null) {
+            if (uiState.isUtang) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    UtangAmountCard(uiState.creditCentavos, Modifier.weight(1f))
+                    ChangeCard(uiState.changeCentavos, Modifier.weight(1f))
+                }
+            } else {
+                ChangeCard(uiState.changeCentavos)
+            }
+            if (!uiState.isUtang && uiState.receivedText.isNotBlank() && uiState.changeCentavos == null) {
                 Text(stringResource(R.string.payment_not_enough), color = MaterialTheme.colorScheme.error)
             }
             uiState.errorRes?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
@@ -247,23 +278,40 @@ private fun PaymentContent(uiState: CashierUiState, actions: CashierActions) {
             ) { Text(stringResource(R.string.payment_complete), style = MaterialTheme.typography.titleMedium) }
         }
     }
+    if (uiState.showCustomerPicker) {
+        CustomerPickerDialog(
+            query = uiState.customerQuery,
+            customers = uiState.customers,
+            errorRes = uiState.customerErrorRes,
+            onQueryChange = actions.onCustomerQueryChange,
+            onChoose = actions.onCustomerChosen,
+            onAdd = actions.onAddCustomer,
+            onDismiss = actions.onCustomerPickerDismissed,
+        )
+    }
 }
 
-/** Cash is the only payment method for now. It is shown selected so the screen reads like a choice. */
+/** What goes on the customer's utang. Amber, to set it apart from cash. */
 @Composable
-private fun PaymentMethodCash() {
+private fun UtangAmountCard(creditCentavos: Long, modifier: Modifier = Modifier) {
     SurfaceCard(
-        modifier = Modifier.fillMaxWidth(),
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
         border = false,
-        contentPadding = 14.dp,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Icon(painterResource(R.drawable.ic_money), contentDescription = null)
-            Text(stringResource(R.string.payment_method_cash), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-            Icon(painterResource(R.drawable.ic_check_circle), contentDescription = null)
-        }
+        Text(
+            stringResource(R.string.payment_utang_amount),
+            style = MaterialTheme.typography.titleSmall,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            Money.format(creditCentavos),
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
@@ -288,9 +336,9 @@ private fun ReceivedAmountDisplay(receivedText: String) {
 }
 
 @Composable
-private fun ChangeCard(changeCentavos: Long?) {
+private fun ChangeCard(changeCentavos: Long?, modifier: Modifier = Modifier) {
     SurfaceCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         border = false,
@@ -328,6 +376,13 @@ private fun SaleCompleteContent(sale: CompletedSale, onNewSale: () -> Unit) {
         SurfaceCard(modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.sale_complete_total, Money.format(sale.totalCentavos)), style = MaterialTheme.typography.titleMedium)
             Text(stringResource(R.string.sale_complete_received, Money.format(sale.amountReceivedCentavos)), style = MaterialTheme.typography.titleMedium)
+            if (sale.creditCentavos > 0) {
+                Text(
+                    stringResource(R.string.sale_complete_utang, Money.format(sale.creditCentavos), sale.customerName.orEmpty()),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.tertiary,
+                )
+            }
         }
         ChangeCard(sale.changeCentavos)
         Button(onClick = onNewSale, shape = CardShape, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {

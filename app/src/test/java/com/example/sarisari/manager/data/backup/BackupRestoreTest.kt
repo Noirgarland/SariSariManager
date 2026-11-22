@@ -10,6 +10,7 @@ import com.example.sarisari.manager.data.local.entity.ProductEntity
 import com.example.sarisari.manager.domain.model.BackupError
 import com.example.sarisari.manager.domain.model.BackupOutcome
 import com.example.sarisari.manager.domain.model.RestoreResult
+import com.example.sarisari.manager.data.repository.CustomerRepositoryImpl
 import com.example.sarisari.manager.data.repository.SalesRepositoryImpl
 import com.example.sarisari.manager.domain.model.SaleLineInput
 import com.example.sarisari.manager.testing.FakeClock
@@ -255,5 +256,26 @@ class BackupRestoreTest {
         val item = SalesRepositoryImpl(db.saleDao(), clock).observeSale(1).first()!!.items.single()
         assertEquals("piece", item.baseUnitName)
         assertEquals(3, db.productDao().getWithUnits(product)!!.product.stockQuantity)
+    }
+
+    @Test
+    fun backupKeepsCustomersAndUtangBalances() = runTest {
+        val product = addProduct(db, "Coke")
+        db.stockMovementDao().receive(product, 5, 500, null, now = 1) { _, _ -> 100 }
+        val customers = CustomerRepositoryImpl(db.customerDao(), clock)
+        val juan = customers.addCustomer("Juan")
+        SalesRepositoryImpl(db.saleDao(), clock).completeSale(listOf(SaleLineInput(product, "piece", 1, 3, 200)), 100, juan)
+        customers.recordPayment(juan, 200, clock.millis(), null)
+        val bytes = backupBytes()
+        assertTrue(prepare(bytes) is BackupOutcome.Success)
+        assertTrue(repo.confirmRestore())
+
+        db.close()
+        StagedRestore.applyIfPresent(context, dbName)
+        db = openLive()
+        val restored = CustomerRepositoryImpl(db.customerDao(), clock)
+        assertEquals(listOf("Juan" to 300L), restored.observeCustomers().first().map { it.name to it.balanceCentavos })
+        assertEquals(2, restored.observeEntries(juan).first().size)
+        assertEquals(500L, SalesRepositoryImpl(db.saleDao(), clock).observeSale(1).first()!!.creditCentavos)
     }
 }

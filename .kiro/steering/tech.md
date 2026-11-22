@@ -145,6 +145,7 @@ Responsibilities:
 - Checkout must save the sale, sale items, and inventory deductions atomically.
 - Failed transactions must not leave partially updated inventory.
 - Checkout must not take stock below zero. Quantities are summed per product across cart lines and checked inside the checkout transaction. An insufficient-stock result names each product with its available and requested quantity, and the cart is kept.
+- Utang: a sale may put the part not covered by cash on a customer's balance, with a ledger entry in the same transaction. Utang sales count as sales on the day they are made; reports show cash sales and utang sales separately, plus utang given, payments collected, and total owed. Payments cannot exceed the balance. Ledger entries are never edited except to mark a payment voided.
 - Sale items snapshot the product name, selling unit, and base unit name. Reports read these snapshots, not the current product.
 - Completed sales are immutable. Use a void or return flow for corrections.
 

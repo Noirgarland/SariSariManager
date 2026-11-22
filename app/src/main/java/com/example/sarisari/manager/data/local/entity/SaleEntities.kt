@@ -8,8 +8,23 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 
-/** A completed cash sale. Rows are never edited except to record a void. */
-@Entity(tableName = "sales", indices = [Index("created_at")])
+/**
+ * A completed sale. Rows are never edited except to record a void.
+ * [amountReceivedCentavos] is the cash handed over. For a sale on utang, [creditCentavos] is the part owed
+ * by [customerId], so total = cash kept + credit. Both columns were added in schema version 7.
+ */
+@Entity(
+    tableName = "sales",
+    foreignKeys = [
+        ForeignKey(
+            entity = CustomerEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["customer_id"],
+            onDelete = ForeignKey.RESTRICT,
+        ),
+    ],
+    indices = [Index("created_at"), Index("customer_id")],
+)
 data class SaleEntity(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long = 0,
     @ColumnInfo(name = "total_centavos") val totalCentavos: Long,
@@ -20,6 +35,8 @@ data class SaleEntity(
     @ColumnInfo(name = "updated_at") val updatedAt: Long,
     @ColumnInfo(name = "voided_at") val voidedAt: Long? = null,
     @ColumnInfo(name = "void_reason") val voidReason: String? = null,
+    @ColumnInfo(name = "customer_id") val customerId: Long? = null,
+    @ColumnInfo(name = "credit_centavos", defaultValue = "0") val creditCentavos: Long = 0,
 )
 
 /** Name, units, price, and cost are copies taken at sale time, so later product edits never change history. */
@@ -63,4 +80,5 @@ data class SaleItemEntity(
 data class SaleWithItems(
     @Embedded val sale: SaleEntity,
     @Relation(parentColumn = "id", entityColumn = "sale_id") val items: List<SaleItemEntity>,
+    @Relation(parentColumn = "customer_id", entityColumn = "id") val customer: CustomerEntity? = null,
 )

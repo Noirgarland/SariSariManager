@@ -27,6 +27,8 @@ data class DashboardUiState(
     val todayStartMillis: Long = 0,
     val today: ReportSummary = ReportSummary(),
     val lowStockCount: Int = 0,
+    /** What all customers owe right now. */
+    val outstandingUtangCentavos: Long = 0,
     val topProducts: List<TopProduct> = emptyList(),
     /** Null when no time dialog is shown. */
     val timeDialog: StoreTimeDialogState? = null,

@@ -7,7 +7,9 @@ import com.example.sarisari.manager.domain.model.ProductUnavailableException
 import com.example.sarisari.manager.domain.model.StockShortage
 import com.example.sarisari.manager.domain.model.ProductUnit
 import com.example.sarisari.manager.domain.usecase.CompleteSaleUseCase
+import com.example.sarisari.manager.domain.usecase.SaveCustomerUseCase
 import com.example.sarisari.manager.testing.FakeCategoryRepository
+import com.example.sarisari.manager.testing.FakeCustomerRepository
 import com.example.sarisari.manager.testing.FakeProductRepository
 import com.example.sarisari.manager.testing.FakeSalesRepository
 import com.example.sarisari.manager.testing.MainDispatcherRule
@@ -39,11 +41,14 @@ class CashierViewModelTest {
         sellingPriceCentavos = 2000, stockQuantity = 10, lowStockThreshold = 5,
     )
     private val sales = FakeSalesRepository()
+    private val customers = FakeCustomerRepository()
     private val viewModel by lazy {
         CashierViewModel(
             FakeProductRepository(listOf(coke, chips)),
             FakeCategoryRepository(),
             CompleteSaleUseCase(sales),
+            customers,
+            SaveCustomerUseCase(customers),
         )
     }
 
@@ -206,6 +211,70 @@ class CashierViewModelTest {
             viewModel.onCompleteSale()
             assertEquals(CashierStage.COMPLETE, state.stage)
             assertEquals(1, sales.completed.single().first.single().quantity)
+        }
+    }
+
+    @Test
+    fun utangPaymentUpdatesTheUtangAmountAsCashIsTyped() = runTest {
+        collecting {
+            val juan = customers.addCustomer("Juan")
+            viewModel.onProductTapped(chips)
+            viewModel.onIncrease("2:pack") // total 40.00
+            viewModel.onProceedToPayment()
+            assertEquals(PaymentMethod.CASH, state.paymentMethod)
+
+            // Choosing Utang without a customer opens the picker.
+            viewModel.onPaymentMethodSelected(PaymentMethod.UTANG)
+            assertTrue(state.showCustomerPicker)
+            assertFalse(state.canComplete)
+            viewModel.onCustomerChosen(state.customers.single { it.id == juan })
+            assertFalse(state.showCustomerPicker)
+            assertEquals("Juan", state.customer?.name)
+
+            // Blank cash means everything is utang; it can be completed right away.
+            assertEquals(4_000L, state.creditCentavos)
+            assertTrue(state.canComplete)
+            viewModel.onReceivedChange("15")
+            assertEquals(2_500L, state.creditCentavos)
+            assertEquals(0L, state.changeCentavos)
+            viewModel.onReceivedChange("50")
+            assertEquals(0L, state.creditCentavos)
+            assertEquals(1_000L, state.changeCentavos)
+
+            viewModel.onReceivedChange("15")
+            viewModel.onCompleteSale()
+            assertEquals(CashierStage.COMPLETE, state.stage)
+            assertEquals(juan, sales.creditCustomers.single())
+            assertEquals(1_500L, sales.completed.single().second)
+            assertEquals(2_500L, state.completedSale?.creditCentavos)
+        }
+    }
+
+    @Test
+    fun newCustomerCanBeAddedFromThePickerAndIsSelected() = runTest {
+        collecting {
+            viewModel.onProductTapped(chips)
+            viewModel.onProceedToPayment()
+            viewModel.onPaymentMethodSelected(PaymentMethod.UTANG)
+            viewModel.onAddCustomer(" Maria ")
+            assertEquals("Maria", state.customer?.name)
+            assertFalse(state.showCustomerPicker)
+            viewModel.onCustomerPickerOpened()
+            viewModel.onAddCustomer("maria")
+            assertEquals(R.string.utang_error_name_taken, state.customerErrorRes)
+        }
+    }
+
+    @Test
+    fun closingThePickerWithoutACustomerGoesBackToCash() = runTest {
+        collecting {
+            viewModel.onProductTapped(chips)
+            viewModel.onProceedToPayment()
+            viewModel.onPaymentMethodSelected(PaymentMethod.UTANG)
+            viewModel.onCustomerPickerDismissed()
+            assertEquals(PaymentMethod.CASH, state.paymentMethod)
+            assertFalse(state.canComplete)
+            assertEquals(0L, state.creditCentavos)
         }
     }
 

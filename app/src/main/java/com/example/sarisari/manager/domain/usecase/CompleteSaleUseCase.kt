@@ -1,6 +1,8 @@
 package com.example.sarisari.manager.domain.usecase
 
 import com.example.sarisari.manager.domain.model.CompletedSale
+import com.example.sarisari.manager.domain.model.CustomerNotFoundException
+import com.example.sarisari.manager.domain.model.SalePayment
 import com.example.sarisari.manager.domain.model.InsufficientCheckoutStockException
 import com.example.sarisari.manager.domain.model.ProductUnavailableException
 import com.example.sarisari.manager.domain.model.QuantityLimits
@@ -16,6 +18,9 @@ enum class CheckoutError {
     INVALID_PRICE,
     INSUFFICIENT_PAYMENT,
     PRODUCT_UNAVAILABLE,
+
+    /** The utang customer no longer exists. */
+    CUSTOMER_UNAVAILABLE,
 }
 
 sealed interface CheckoutResult {
@@ -37,7 +42,12 @@ fun changeCentavos(totalCentavos: Long, receivedCentavos: Long): Long = maxOf(0L
 class CompleteSaleUseCase @Inject constructor(
     private val sales: SalesRepository,
 ) {
-    suspend operator fun invoke(lines: List<SaleLineInput>, amountReceivedCentavos: Long): CheckoutResult {
+    /** A cash sale. */
+    suspend operator fun invoke(lines: List<SaleLineInput>, amountReceivedCentavos: Long): CheckoutResult =
+        invoke(lines, SalePayment.Cash(amountReceivedCentavos))
+
+    suspend operator fun invoke(lines: List<SaleLineInput>, payment: SalePayment): CheckoutResult {
+        val amountReceivedCentavos = payment.amountReceivedCentavos
         if (lines.isEmpty()) return CheckoutResult.Rejected(CheckoutError.EMPTY_CART)
         if (lines.any { !it.hasValidQuantity() }) return CheckoutResult.Rejected(CheckoutError.INVALID_QUANTITY)
         val perProduct = lines.groupBy { it.productId }.values.map { group -> group.sumOf { it.baseQuantity } }
@@ -53,11 +63,18 @@ class CompleteSaleUseCase @Inject constructor(
             return CheckoutResult.Rejected(CheckoutError.INVALID_PRICE)
         }
         if (total > MAX_SALE_TOTAL_CENTAVOS) return CheckoutResult.Rejected(CheckoutError.INVALID_PRICE)
-        if (amountReceivedCentavos < total) return CheckoutResult.Rejected(CheckoutError.INSUFFICIENT_PAYMENT)
+        if (amountReceivedCentavos < 0) return CheckoutResult.Rejected(CheckoutError.INSUFFICIENT_PAYMENT)
+        // On utang any cash is fine, including none: the rest goes on the customer's balance.
+        val creditCustomerId = (payment as? SalePayment.Utang)?.customerId
+        if (creditCustomerId == null && amountReceivedCentavos < total) {
+            return CheckoutResult.Rejected(CheckoutError.INSUFFICIENT_PAYMENT)
+        }
         return try {
-            CheckoutResult.Completed(sales.completeSale(lines, amountReceivedCentavos))
+            CheckoutResult.Completed(sales.completeSale(lines, amountReceivedCentavos, creditCustomerId))
         } catch (_: ProductUnavailableException) {
             CheckoutResult.Rejected(CheckoutError.PRODUCT_UNAVAILABLE)
+        } catch (_: CustomerNotFoundException) {
+            CheckoutResult.Rejected(CheckoutError.CUSTOMER_UNAVAILABLE)
         } catch (e: InsufficientCheckoutStockException) {
             CheckoutResult.InsufficientStock(e.shortages)
         }

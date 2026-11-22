@@ -2,6 +2,8 @@ package com.example.sarisari.manager.feature.reports
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sarisari.manager.domain.model.CreditSummary
+import com.example.sarisari.manager.domain.repository.CustomerRepository
 import com.example.sarisari.manager.domain.repository.ReportRepository
 import com.example.sarisari.manager.domain.usecase.ReportPeriod
 import com.example.sarisari.manager.domain.usecase.isAfterNow
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.update
 @HiltViewModel
 class ReportsViewModel @Inject constructor(
     private val reports: ReportRepository,
+    private val customers: CustomerRepository,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -30,13 +33,22 @@ class ReportsViewModel @Inject constructor(
         combine(
             reports.observeSummary(p.startMillis, p.endMillis),
             reports.observeTopProducts(p.startMillis, p.endMillis, TOP_PRODUCT_LIMIT),
-        ) { summary, top ->
+            customers.observeOutstandingTotal(),
+            customers.observeCollected(p.startMillis, p.endMillis),
+            customers.observeCustomers(),
+        ) { summary, top, outstanding, collected, allCustomers ->
             ReportsUiState(
                 isLoading = false,
                 period = p,
                 canGoNext = !p.next().isAfterNow(clock),
                 summary = summary,
                 topProducts = top,
+                utang = CreditSummary(
+                    outstandingCentavos = outstanding,
+                    collectedCentavos = collected,
+                    // Already sorted highest balance first.
+                    topDebtors = allCustomers.filter { it.balanceCentavos > 0 }.take(TOP_DEBTOR_LIMIT),
+                ),
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), ReportsUiState())
@@ -49,5 +61,6 @@ class ReportsViewModel @Inject constructor(
     private companion object {
         const val STOP_TIMEOUT_MILLIS = 5_000L
         const val TOP_PRODUCT_LIMIT = 5
+        const val TOP_DEBTOR_LIMIT = 10
     }
 }

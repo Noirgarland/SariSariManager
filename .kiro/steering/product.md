@@ -31,7 +31,7 @@ V1 has a single owner and no login. The owner may change selling prices at the c
 - Modify quantities
 - Change selling prices per cart line and choose the selling unit
 - Calculate transaction totals
-- Accept cash payments only (quick-cash buttons, change calculation)
+- Accept cash or utang (customer credit) payments. On utang, any cash paid now is kept and the rest goes on the customer's balance (quick-cash buttons, number pad, change calculation)
 - Void or return a completed sale
 - Calculate customer change
 - Record completed transactions
@@ -62,6 +62,14 @@ V1 has a single owner and no login. The owner may change selling prices at the c
 - Generate daily and monthly reports
 - Let the owner choose the inventory costing method (Weighted Average Cost or Latest Purchase Cost)
 
+### Utang (Customer Credit), under More
+- Customers identified by name (unique, ignoring case)
+- Each customer's balance, last utang date, and last payment date
+- Record payments of any amount up to the balance, with the date paid; a partial payment leaves the rest owing
+- Void a payment recorded by mistake (reversal entry, nothing deleted)
+- Voiding an utang sale takes it off the customer's balance automatically
+- No credit limit; balances appear in the utang report
+
 ### Settings, Backup, and Export
 - Edit the store name
 - Choose the inventory costing method
@@ -73,7 +81,6 @@ V1 has a single owner and no login. The owner may change selling prices at the c
 ### Future Modules
 - Supplier management
 - Purchase management (beyond recording incoming stock)
-- Customer credit (utang)
 - Digital payment recording
 - Cloud backup and synchronization
 - Multi-user and multi-device support

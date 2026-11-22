@@ -5,7 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.sarisari.manager.R
 import com.example.sarisari.manager.core.util.Money
 import com.example.sarisari.manager.domain.model.CompletedSale
+import com.example.sarisari.manager.domain.model.Customer
 import com.example.sarisari.manager.domain.model.Product
+import com.example.sarisari.manager.domain.repository.CustomerRepository
+import com.example.sarisari.manager.domain.usecase.CustomerError
+import com.example.sarisari.manager.domain.usecase.SaveCustomerResult
+import com.example.sarisari.manager.domain.usecase.SaveCustomerUseCase
 import com.example.sarisari.manager.domain.model.StockShortage
 import com.example.sarisari.manager.domain.repository.CategoryRepository
 import com.example.sarisari.manager.domain.repository.ProductRepository
@@ -33,6 +38,8 @@ class CashierViewModel @Inject constructor(
     productRepository: ProductRepository,
     categoryRepository: CategoryRepository,
     private val completeSale: CompleteSaleUseCase,
+    customerRepository: CustomerRepository,
+    private val saveCustomer: SaveCustomerUseCase,
 ) : ViewModel() {
 
     private data class Browse(val query: String, val categoryId: Long?)
@@ -49,6 +56,11 @@ class CashierViewModel @Inject constructor(
         val errorRes: Int? = null,
         val stockShortages: List<StockShortage> = emptyList(),
         val completedSale: CompletedSale? = null,
+        val paymentMethod: PaymentMethod = PaymentMethod.CASH,
+        val customer: Customer? = null,
+        val showCustomerPicker: Boolean = false,
+        val customerQuery: String = "",
+        val customerErrorRes: Int? = null,
     ) {
         fun withoutError() = copy(errorRes = null, stockShortages = emptyList())
     }
@@ -60,7 +72,17 @@ class CashierViewModel @Inject constructor(
         .distinctUntilChanged()
         .flatMapLatest { productRepository.observeProducts(it.query, it.categoryId, includeArchived = false) }
 
-    val uiState: StateFlow<CashierUiState> = combine(local, categoryRepository.observeCategories(), products) { l, categories, list ->
+    private val customers = local
+        .map { it.customerQuery }
+        .distinctUntilChanged()
+        .flatMapLatest { customerRepository.observeCustomers(it) }
+
+    val uiState: StateFlow<CashierUiState> = combine(
+        local,
+        categoryRepository.observeCategories(),
+        products,
+        customers,
+    ) { l, categories, list, customerList ->
         CashierUiState(
             isLoading = false,
             query = l.query,
@@ -75,6 +97,13 @@ class CashierViewModel @Inject constructor(
             errorRes = l.errorRes,
             stockShortages = l.stockShortages,
             completedSale = l.completedSale,
+            paymentMethod = l.paymentMethod,
+            // Show the chosen customer with their latest balance when it is in the loaded list.
+            customer = l.customer?.let { chosen -> customerList.firstOrNull { it.id == chosen.id } ?: chosen },
+            showCustomerPicker = l.showCustomerPicker,
+            customerQuery = l.customerQuery,
+            customers = customerList,
+            customerErrorRes = l.customerErrorRes,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), CashierUiState())
 
@@ -147,7 +176,53 @@ class CashierViewModel @Inject constructor(
     }
 
     fun onProceedToPayment() = update {
-        if (it.cart.isEmpty()) it else it.copy(stage = CashierStage.PAYMENT, receivedText = "").withoutError()
+        if (it.cart.isEmpty()) {
+            it
+        } else {
+            it.copy(stage = CashierStage.PAYMENT, receivedText = "", paymentMethod = PaymentMethod.CASH, customer = null)
+                .withoutError()
+        }
+    }
+
+    /** Choosing Utang without a customer opens the customer picker. */
+    fun onPaymentMethodSelected(method: PaymentMethod) = update {
+        it.copy(paymentMethod = method, showCustomerPicker = method == PaymentMethod.UTANG && it.customer == null)
+            .withoutError()
+    }
+
+    fun onCustomerPickerOpened() = update { it.copy(showCustomerPicker = true, customerQuery = "", customerErrorRes = null) }
+
+    fun onCustomerPickerDismissed() = update {
+        // Closing the picker without a customer goes back to Cash, so the sale is never left without a payer.
+        it.copy(
+            showCustomerPicker = false,
+            customerErrorRes = null,
+            paymentMethod = if (it.customer == null) PaymentMethod.CASH else it.paymentMethod,
+        )
+    }
+
+    fun onCustomerQueryChange(value: String) = update { it.copy(customerQuery = value, customerErrorRes = null) }
+
+    fun onCustomerChosen(customer: Customer) = update {
+        it.copy(customer = customer, paymentMethod = PaymentMethod.UTANG, showCustomerPicker = false, customerQuery = "")
+            .withoutError()
+    }
+
+    /** Adds a customer with the typed name and selects them. */
+    fun onAddCustomer(name: String) {
+        viewModelScope.launch {
+            when (val result = saveCustomer(name)) {
+                is SaveCustomerResult.Saved -> onCustomerChosen(Customer(result.customerId, name.trim(), 0, null, null))
+                is SaveCustomerResult.Invalid -> update {
+                    it.copy(
+                        customerErrorRes = when (result.error) {
+                            CustomerError.NAME_INVALID -> R.string.utang_error_name
+                            CustomerError.NAME_TAKEN -> R.string.utang_error_name_taken
+                        },
+                    )
+                }
+            }
+        }
     }
 
     fun onBackToCart() = update { it.copy(stage = CashierStage.SELLING).withoutError() }
@@ -160,12 +235,12 @@ class CashierViewModel @Inject constructor(
 
     fun onCompleteSale() {
         val state = uiState.value
-        val received = state.receivedCentavos
-        if (!state.canComplete || received == null) return
+        if (!state.canComplete) return
+        val payment = state.salePayment() ?: return
         update { it.copy(isSaving = true).withoutError() }
         viewModelScope.launch {
             try {
-                when (val result = completeSale(state.cart.map { it.toSaleLine() }, received)) {
+                when (val result = completeSale(state.cart.map { it.toSaleLine() }, payment)) {
                     is CheckoutResult.Completed -> update {
                         it.copy(
                             isSaving = false,
@@ -204,6 +279,7 @@ class CashierViewModel @Inject constructor(
         CheckoutError.INVALID_PRICE -> R.string.payment_error_price
         CheckoutError.INSUFFICIENT_PAYMENT -> R.string.payment_not_enough
         CheckoutError.PRODUCT_UNAVAILABLE -> R.string.payment_error_unavailable
+        CheckoutError.CUSTOMER_UNAVAILABLE -> R.string.payment_error_customer
     }
 
     private companion object {

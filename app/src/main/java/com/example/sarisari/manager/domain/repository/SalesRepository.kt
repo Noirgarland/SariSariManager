@@ -10,9 +10,15 @@ interface SalesRepository {
      * Saves the sale, its items with cost snapshots, and the stock deductions in one transaction.
      * Stock is checked inside the transaction and may never go below zero.
      * @throws com.example.sarisari.manager.domain.model.ProductUnavailableException for a missing or archived product.
+     * With [creditCustomerId], the part of the total not covered by the cash goes on that customer's utang.
      * @throws com.example.sarisari.manager.domain.model.InsufficientCheckoutStockException when stock cannot cover the cart.
+     * @throws com.example.sarisari.manager.domain.model.CustomerNotFoundException for an unknown customer.
      */
-    suspend fun completeSale(lines: List<SaleLineInput>, amountReceivedCentavos: Long): CompletedSale
+    suspend fun completeSale(
+        lines: List<SaleLineInput>,
+        amountReceivedCentavos: Long,
+        creditCustomerId: Long? = null,
+    ): CompletedSale
 
     /** Newest first. Voided sales are included. */
     fun observeSales(limit: Int = 200): Flow<List<Sale>>

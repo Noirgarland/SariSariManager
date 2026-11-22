@@ -31,6 +31,7 @@ class ReportRepositoryImpl @Inject constructor(
                 costOfGoodsSoldCentavos = sales.cost,
                 expensesCentavos = expenses,
                 transactionCount = sales.transactions,
+                creditSalesCentavos = sales.credit,
             )
         }
 

@@ -19,6 +19,8 @@ import com.example.sarisari.manager.feature.products.productEditScreen
 import com.example.sarisari.manager.feature.products.productsScreen
 import com.example.sarisari.manager.feature.reports.reportsScreen
 import com.example.sarisari.manager.feature.settings.settingsScreen
+import com.example.sarisari.manager.feature.utang.customerLedgerScreen
+import com.example.sarisari.manager.feature.utang.utangScreen
 
 @Composable
 fun SariSariNavHost(
@@ -39,6 +41,7 @@ fun SariSariNavHost(
             onAddStock = { navController.navigate(InventoryRoute) },
             onAddExpense = { navController.navigate(ExpensesRoute) },
             onSeeReports = { navController.navigateToTopLevel(ReportsRoute) },
+            onOpenUtang = { navController.navigate(UtangRoute) },
         )
         expensesScreen(onBack = { navController.popBackStack() })
         cashierScreen()
@@ -64,7 +67,13 @@ fun SariSariNavHost(
         stockHistoryScreen(onBack = { navController.popBackStack() })
         reportsScreen()
         settingsScreen(onBack = { navController.popBackStack() })
+        utangScreen(
+            onBack = { navController.popBackStack() },
+            onOpenCustomer = { navController.navigate(CustomerLedgerRoute(it)) },
+        )
+        customerLedgerScreen(onBack = { navController.popBackStack() })
         moreScreen(
+            onOpenUtang = { navController.navigate(UtangRoute) },
             onOpenInventory = { navController.navigate(InventoryRoute) },
             onOpenSalesHistory = { navController.navigate(SalesHistoryRoute) },
             onOpenExpenses = { navController.navigate(ExpensesRoute) },

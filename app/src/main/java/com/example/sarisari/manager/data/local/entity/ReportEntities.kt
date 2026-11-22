@@ -29,6 +29,7 @@ data class SalesTotalsRow(
     @ColumnInfo(name = "transactions") val transactions: Int,
     @ColumnInfo(name = "revenue") val revenue: Long,
     @ColumnInfo(name = "cost") val cost: Long,
+    @ColumnInfo(name = "credit") val credit: Long = 0,
 )
 
 data class TopProductRow(

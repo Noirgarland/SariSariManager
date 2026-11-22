@@ -18,7 +18,8 @@ interface ReportDao {
         """
         SELECT COUNT(*) AS transactions,
                COALESCE(SUM(total_centavos), 0) AS revenue,
-               COALESCE(SUM(total_cost_centavos), 0) AS cost
+               COALESCE(SUM(total_cost_centavos), 0) AS cost,
+               COALESCE(SUM(credit_centavos), 0) AS credit
         FROM sales
         WHERE voided_at IS NULL AND created_at >= :start AND created_at < :end
         """

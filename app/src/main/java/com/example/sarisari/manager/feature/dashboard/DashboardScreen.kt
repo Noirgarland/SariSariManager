@@ -71,6 +71,7 @@ fun DashboardScreen(
     onAddStock: () -> Unit,
     onAddExpense: () -> Unit,
     onSeeReports: () -> Unit,
+    onOpenUtang: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -89,6 +90,7 @@ fun DashboardScreen(
             onAddStock = onAddStock,
             onAddExpense = onAddExpense,
             onSeeReports = onSeeReports,
+            onOpenUtang = onOpenUtang,
         ),
     )
     uiState.timeDialog?.let { dialog ->
@@ -121,6 +123,7 @@ internal data class DashboardActions(
     val onAddStock: () -> Unit = {},
     val onAddExpense: () -> Unit = {},
     val onSeeReports: () -> Unit = {},
+    val onOpenUtang: () -> Unit = {},
 )
 
 @Composable
@@ -162,11 +165,13 @@ internal fun DashboardContent(uiState: DashboardUiState, actions: DashboardActio
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 MetricCard(
-                    iconRes = R.drawable.ic_receipt,
-                    value = Money.format(uiState.today.expensesCentavos),
-                    label = stringResource(R.string.dashboard_expenses_today),
+                    iconRes = R.drawable.ic_people,
+                    value = Money.format(uiState.outstandingUtangCentavos),
+                    label = stringResource(R.string.dashboard_outstanding_utang),
                     modifier = Modifier.weight(1f),
-                    onClick = actions.onAddExpense,
+                    iconTint = MaterialTheme.colorScheme.tertiary,
+                    iconBackground = MaterialTheme.colorScheme.tertiaryContainer,
+                    onClick = actions.onOpenUtang,
                 )
                 val warn = uiState.lowStockCount > 0
                 MetricCard(
@@ -179,6 +184,13 @@ internal fun DashboardContent(uiState: DashboardUiState, actions: DashboardActio
                     onClick = actions.onAddStock,
                 )
             }
+            MetricCard(
+                iconRes = R.drawable.ic_receipt,
+                value = Money.format(uiState.today.expensesCentavos),
+                label = stringResource(R.string.dashboard_expenses_today),
+                modifier = Modifier.fillMaxWidth(),
+                onClick = actions.onAddExpense,
+            )
             SectionHeader(stringResource(R.string.dashboard_quick_actions))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 QuickActionButton(

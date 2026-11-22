@@ -18,8 +18,11 @@ class SalesRepositoryImpl @Inject constructor(
     private val clock: Clock,
 ) : SalesRepository {
 
-    override suspend fun completeSale(lines: List<SaleLineInput>, amountReceivedCentavos: Long): CompletedSale =
-        dao.complete(lines, amountReceivedCentavos, clock.millis())
+    override suspend fun completeSale(
+        lines: List<SaleLineInput>,
+        amountReceivedCentavos: Long,
+        creditCustomerId: Long?,
+    ): CompletedSale = dao.complete(lines, amountReceivedCentavos, clock.millis(), creditCustomerId)
 
     override fun observeSales(limit: Int): Flow<List<Sale>> =
         dao.observeAll(limit).map { list -> list.map { it.toDomain() } }
@@ -38,6 +41,9 @@ class SalesRepositoryImpl @Inject constructor(
         voidedAtMillis = sale.voidedAt,
         voidReason = sale.voidReason,
         items = items.sortedBy { it.id }.map { it.toDomain() },
+        creditCentavos = sale.creditCentavos,
+        customerId = sale.customerId,
+        customerName = customer?.name,
     )
 
     private fun SaleItemEntity.toDomain() = SaleItem(

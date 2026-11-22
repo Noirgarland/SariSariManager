@@ -4,12 +4,16 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
+import com.example.sarisari.manager.data.local.entity.CreditEntryEntity
+import com.example.sarisari.manager.data.local.entity.CustomerEntity
 import com.example.sarisari.manager.data.local.entity.ProductEntity
 import com.example.sarisari.manager.data.local.entity.SaleEntity
 import com.example.sarisari.manager.data.local.entity.SaleItemEntity
 import com.example.sarisari.manager.data.local.entity.SaleWithItems
 import com.example.sarisari.manager.data.local.entity.StockMovementEntity
 import com.example.sarisari.manager.domain.model.CompletedSale
+import com.example.sarisari.manager.domain.model.CustomerNotFoundException
+import com.example.sarisari.manager.domain.model.creditFor
 import com.example.sarisari.manager.domain.model.InsufficientCheckoutStockException
 import com.example.sarisari.manager.domain.model.ProductUnavailableException
 import com.example.sarisari.manager.domain.model.QuantityLimits
@@ -63,6 +67,12 @@ abstract class SaleDao {
     @Insert
     protected abstract suspend fun insertMovement(movement: StockMovementEntity): Long
 
+    @Insert
+    protected abstract suspend fun insertCreditEntry(entry: CreditEntryEntity): Long
+
+    @Query("SELECT * FROM customers WHERE id = :id")
+    protected abstract suspend fun getCustomer(id: Long): CustomerEntity?
+
     @Query("UPDATE sales SET voided_at = :now, void_reason = :reason, updated_at = :now WHERE id = :id")
     protected abstract suspend fun markVoided(id: Long, reason: String?, now: Long)
 
@@ -77,14 +87,31 @@ abstract class SaleDao {
      * checked against the stock read inside this transaction. Each deduction is also guarded in SQL
      * (`stock_quantity >= :quantity`), so stock cannot go below zero even if it changed after the read.
      *
+     * With [creditCustomerId], whatever [amountReceived] does not cover is put on that customer's utang,
+     * with a ledger entry in the same transaction. If the cash covers the total, it is a plain cash sale.
+     *
      * @throws ProductUnavailableException if a product is missing or archived. Nothing is written.
      * @throws InsufficientCheckoutStockException if stock cannot cover the cart. Nothing is written.
+     * @throws CustomerNotFoundException if [creditCustomerId] does not exist. Nothing is written.
      */
     @Transaction
-    open suspend fun complete(lines: List<SaleLineInput>, amountReceived: Long, now: Long): CompletedSale {
+    open suspend fun complete(
+        lines: List<SaleLineInput>,
+        amountReceived: Long,
+        now: Long,
+        creditCustomerId: Long? = null,
+    ): CompletedSale {
         require(lines.isNotEmpty()) { "A sale needs at least one line" }
+        require(amountReceived >= 0) { "Amount received cannot be negative" }
         val total = lines.totalCentavos()
-        require(amountReceived >= total) { "Amount received is less than the total" }
+        val credit = if (creditCustomerId == null) 0L else creditFor(total, amountReceived)
+        require(credit > 0 || amountReceived >= total) { "Amount received is less than the total" }
+        val customer = if (credit > 0) {
+            getCustomer(creditCustomerId!!) ?: throw CustomerNotFoundException(creditCustomerId)
+        } else {
+            null
+        }
+        val change = maxOf(0L, amountReceived - total)
 
         // Base quantity per product over every cart line, in cart order.
         val requested = LinkedHashMap<Long, Long>()
@@ -103,12 +130,28 @@ abstract class SaleDao {
             SaleEntity(
                 totalCentavos = total,
                 amountReceivedCentavos = amountReceived,
-                changeCentavos = amountReceived - total,
+                changeCentavos = change,
                 totalCostCentavos = 0,
                 createdAt = now,
                 updatedAt = now,
+                customerId = customer?.id,
+                creditCentavos = credit,
             )
         )
+        if (customer != null) {
+            insertCreditEntry(
+                CreditEntryEntity(
+                    customerId = customer.id,
+                    type = CustomerDao.TYPE_CREDIT_SALE,
+                    amountCentavos = credit,
+                    saleId = saleId,
+                    note = "Sale #$saleId",
+                    occurredAt = now,
+                    createdAt = now,
+                    updatedAt = now,
+                )
+            )
+        }
         var totalCost = 0L
         for (line in lines) {
             val product = products.getValue(line.productId)
@@ -156,7 +199,7 @@ abstract class SaleDao {
         }
         // The cost total is only known after the lines are processed.
         updateTotalCost(saleId, totalCost)
-        return CompletedSale(saleId, total, amountReceived, amountReceived - total, now)
+        return CompletedSale(saleId, total, amountReceived, change, now, credit, customer?.name)
     }
 
     private fun ProductEntity.shortageFor(requested: Long): StockShortage? =
@@ -193,6 +236,22 @@ abstract class SaleDao {
                 )
             )
             updateStock(product.id, product.stockQuantity + item.baseQuantity, now)
+        }
+        // A voided utang sale comes off the customer's balance automatically.
+        val sale = saleWithItems.sale
+        if (sale.creditCentavos > 0 && sale.customerId != null) {
+            insertCreditEntry(
+                CreditEntryEntity(
+                    customerId = sale.customerId,
+                    type = CustomerDao.TYPE_SALE_VOID,
+                    amountCentavos = -sale.creditCentavos,
+                    saleId = saleId,
+                    note = "Void of sale #$saleId",
+                    occurredAt = now,
+                    createdAt = now,
+                    updatedAt = now,
+                )
+            )
         }
         markVoided(saleId, reason, now)
     }

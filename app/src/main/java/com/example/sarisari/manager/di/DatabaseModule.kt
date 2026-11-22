@@ -6,6 +6,7 @@ import com.example.sarisari.manager.data.backup.StagedRestore
 import com.example.sarisari.manager.data.local.dao.AppSettingDao
 import com.example.sarisari.manager.data.local.dao.CategoryDao
 import com.example.sarisari.manager.data.local.dao.ExpenseDao
+import com.example.sarisari.manager.data.local.dao.CustomerDao
 import com.example.sarisari.manager.data.local.dao.ExportDao
 import com.example.sarisari.manager.data.local.dao.ReportDao
 import com.example.sarisari.manager.data.local.dao.StoreSessionDao
@@ -68,4 +69,7 @@ object DatabaseModule {
 
     @Provides
     fun provideExportDao(db: AppDatabase): ExportDao = db.exportDao()
+
+    @Provides
+    fun provideCustomerDao(db: AppDatabase): CustomerDao = db.customerDao()
 }

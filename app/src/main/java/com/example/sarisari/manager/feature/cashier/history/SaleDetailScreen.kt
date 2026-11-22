@@ -74,6 +74,12 @@ internal fun SaleDetailContent(uiState: SaleDetailUiState, onBack: () -> Unit, o
                         AmountRow(R.string.sale_detail_total, sale.totalCentavos, bold = true)
                         AmountRow(R.string.sale_detail_received, sale.amountReceivedCentavos)
                         AmountRow(R.string.sale_detail_change, sale.changeCentavos)
+            if (sale.isOnCredit) {
+                AmountRow(R.string.sale_detail_utang, sale.creditCentavos)
+                sale.customerName?.let {
+                    Text(stringResource(R.string.sale_detail_customer, it), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
                         AmountRow(R.string.sale_detail_profit, sale.grossProfitCentavos)
                     }
                 }

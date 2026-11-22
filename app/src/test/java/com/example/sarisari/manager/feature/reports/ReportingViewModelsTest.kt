@@ -13,6 +13,7 @@ import com.example.sarisari.manager.feature.dashboard.StoreTimeAction
 import com.example.sarisari.manager.feature.dashboard.StoreTimeDialogState
 import com.example.sarisari.manager.feature.expenses.ExpensesViewModel
 import com.example.sarisari.manager.testing.FakeClock
+import com.example.sarisari.manager.testing.FakeCustomerRepository
 import com.example.sarisari.manager.testing.FakeExpenseRepository
 import com.example.sarisari.manager.testing.FakeProductRepository
 import com.example.sarisari.manager.testing.FakeReportRepository
@@ -50,7 +51,7 @@ class ReportingViewModelsTest {
         val reports = FakeReportRepository()
         val today = ReportPeriod.Day(todayDate)
         reports.summaries.value = mapOf(today.startMillis to ReportSummary(10_000, 6_000, 1_000, 3))
-        val vm = ReportsViewModel(reports, clock)
+        val vm = ReportsViewModel(reports, FakeCustomerRepository(), clock)
         vm.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
         assertEquals(today, vm.uiState.value.period)
@@ -113,7 +114,8 @@ class ReportingViewModelsTest {
         sessions: FakeStoreSessionRepository,
         settings: FakeSettingsRepository = FakeSettingsRepository(),
     ) = DashboardViewModel(
-        FakeReportRepository(), FakeProductRepository(), settings, sessions, StoreSessionUseCase(sessions, clock), clock,
+        FakeReportRepository(), FakeProductRepository(), settings, sessions, FakeCustomerRepository(),
+        StoreSessionUseCase(sessions, clock), clock,
     )
 
     private fun TestScope.start(vm: DashboardViewModel) {
