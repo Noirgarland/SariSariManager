@@ -7,7 +7,10 @@ import com.example.sarisari.manager.domain.usecase.AddExpenseUseCase
 import com.example.sarisari.manager.domain.usecase.ExpenseError
 import com.example.sarisari.manager.domain.usecase.ReportPeriod
 import com.example.sarisari.manager.domain.usecase.StoreSessionUseCase
+import com.example.sarisari.manager.R
 import com.example.sarisari.manager.feature.dashboard.DashboardViewModel
+import com.example.sarisari.manager.feature.dashboard.StoreTimeAction
+import com.example.sarisari.manager.feature.dashboard.StoreTimeDialogState
 import com.example.sarisari.manager.feature.expenses.ExpensesViewModel
 import com.example.sarisari.manager.testing.FakeClock
 import com.example.sarisari.manager.testing.FakeExpenseRepository
@@ -119,29 +122,75 @@ class ReportingViewModelsTest {
     }
 
     @Test
-    fun dashboardOpensAndClosesTheStore() = runTest {
+    fun dashboardOpensAndClosesTheStoreWithTheClockDialog() = runTest {
         val sessions = FakeStoreSessionRepository()
         val vm = dashboard(sessions, FakeSettingsRepository(mapOf(StoreSettings.STORE_NAME_KEY to "Aling Rosa")))
         start(vm)
         assertEquals("Aling Rosa", vm.uiState.value.storeName)
         assertNull(vm.uiState.value.session)
 
-        vm.onOpenStore()
+        // 10:00 AM Manila. The clock starts at now.
+        vm.onOpenStoreClicked()
         advanceUntilIdle()
-        assertTrue(vm.uiState.value.session!!.isOpen)
+        assertEquals(StoreTimeDialogState(StoreTimeAction.OPEN, LocalTime.of(10, 0)), vm.uiState.value.timeDialog)
+        vm.onTimeConfirmed(LocalTime.of(10, 30)) // later than now
+        advanceUntilIdle()
+        assertEquals(R.string.store_time_error_future, vm.uiState.value.timeDialog?.errorRes)
+        assertNull(vm.uiState.value.session)
+        vm.onTimeConfirmed(LocalTime.of(9, 15))
+        advanceUntilIdle()
+        assertNull(vm.uiState.value.timeDialog)
+        assertEquals(Instant.parse("2025-11-18T01:15:00Z").toEpochMilli(), vm.uiState.value.session!!.openedAtMillis)
         assertFalse(vm.uiState.value.sessionFromEarlierDay)
 
         clock.set(Instant.parse("2025-11-18T12:00:00Z")) // 8:00 PM Manila
         vm.onCloseStoreClicked()
-        vm.onCloseStoreConfirmed(LocalTime.of(21, 0)) // in the future
         advanceUntilIdle()
-        assertTrue(vm.uiState.value.closeTimeInvalid)
+        assertEquals(LocalTime.of(20, 0), vm.uiState.value.timeDialog?.initialTime)
+        vm.onTimeConfirmed(LocalTime.of(21, 0)) // in the future
+        advanceUntilIdle()
+        assertEquals(R.string.store_time_error_future, vm.uiState.value.timeDialog?.errorRes)
         assertTrue(vm.uiState.value.session!!.isOpen)
-
-        vm.onCloseStoreConfirmed(LocalTime.of(19, 30))
+        vm.onTimeConfirmed(LocalTime.of(19, 30))
         advanceUntilIdle()
-        assertFalse(vm.uiState.value.showCloseDialog)
+        assertNull(vm.uiState.value.timeDialog)
         assertEquals(Instant.parse("2025-11-18T11:30:00Z").toEpochMilli(), vm.uiState.value.session!!.closedAtMillis)
+
+        // Reopening before the last close is refused with a message; after it, it works.
+        vm.onOpenStoreClicked()
+        vm.onTimeConfirmed(LocalTime.of(19, 0))
+        advanceUntilIdle()
+        assertEquals(R.string.store_time_error_before_last_close, vm.uiState.value.timeDialog?.errorRes)
+        vm.onTimeConfirmed(LocalTime.of(20, 0))
+        advanceUntilIdle()
+        assertNull(vm.uiState.value.timeDialog)
+        assertTrue(vm.uiState.value.session!!.isOpen)
+    }
+
+    @Test
+    fun cancellingTheDialogChangesNothing() = runTest {
+        val sessions = FakeStoreSessionRepository()
+        val vm = dashboard(sessions)
+        start(vm)
+        vm.onOpenStoreClicked()
+        vm.onTimeDialogDismissed()
+        advanceUntilIdle()
+        assertNull(vm.uiState.value.timeDialog)
+        assertNull(vm.uiState.value.session)
+    }
+
+    @Test
+    fun closingAfterMidnightIsRecordedOnTheNextDay() = runTest {
+        val sessions = FakeStoreSessionRepository()
+        sessions.open(Instant.parse("2025-11-18T12:00:00Z").toEpochMilli()) // 8:00 PM Nov 18 Manila
+        clock.set(Instant.parse("2025-11-18T17:30:00Z")) // 1:30 AM Nov 19 Manila
+        val vm = dashboard(sessions)
+        start(vm)
+        vm.onCloseStoreClicked()
+        vm.onTimeConfirmed(LocalTime.of(1, 0))
+        advanceUntilIdle()
+        assertNull(vm.uiState.value.timeDialog)
+        assertEquals(Instant.parse("2025-11-18T17:00:00Z").toEpochMilli(), vm.uiState.value.session!!.closedAtMillis)
     }
 
     @Test
@@ -152,8 +201,10 @@ class ReportingViewModelsTest {
         start(vm)
         assertNull(vm.uiState.value.storeName)
         assertTrue(vm.uiState.value.sessionFromEarlierDay)
-        assertEquals(LocalTime.of(21, 0), vm.defaultCloseTime())
-        vm.onCloseStoreConfirmed(LocalTime.of(21, 0))
+        vm.onCloseStoreClicked()
+        advanceUntilIdle()
+        assertEquals(LocalTime.of(21, 0), vm.uiState.value.timeDialog?.initialTime)
+        vm.onTimeConfirmed(LocalTime.of(21, 0))
         advanceUntilIdle()
         assertEquals(Instant.parse("2025-11-17T13:00:00Z").toEpochMilli(), vm.uiState.value.session!!.closedAtMillis)
     }

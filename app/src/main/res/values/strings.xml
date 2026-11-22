@@ -49,10 +49,16 @@
     <string name="product_form_cost">Cost per unit (\u20B1)</string>
     <string name="product_form_price">Selling price per unit (\u20B1)</string>
     <string name="product_form_threshold">Low-stock level</string>
-    <string name="product_form_threshold_hint">Warn when stock is at or below this number</string>
-    <string name="product_form_stock_note">Stock starts at 0 and is added through Inventory.</string>
+    <string name="product_form_threshold_hint">Not your stock count. You get a low-stock warning when stock falls to this number or below.</string>
+    <string name="product_form_base_unit_fallback">units</string>
+    <!-- 1: stock quantity, 2: base unit name -->
+    <string name="product_form_stock_on_hand">Stock on hand: %1$d %2$s. Use Inventory to receive or adjust stock.</string>
+    <!-- 1: base unit name -->
+    <string name="product_form_opening_stock">Stock you have now (%1$s)</string>
+    <string name="product_form_opening_stock_hint">Optional. Saved as stock received at the cost above.</string>
+    <string name="product_error_opening_stock">Enter a whole number from 0 to 1,000,000.</string>
     <string name="product_form_units_title">Other selling units</string>
-    <string name="product_form_units_hint">Optional. For example a pack of 6 sold at its own price.</string>
+    <string name="product_form_units_hint">Optional. For example a pack of 6 sold at its own price. \"Units inside\" is how many base units one pack holds. It does not add stock.</string>
     <string name="product_form_unit_name">Unit name</string>
     <string name="product_form_unit_quantity">Units inside</string>
     <string name="product_form_unit_price">Price (\u20B1)</string>
@@ -224,7 +230,13 @@
     <string name="close_store_title">Close store</string>
     <string name="close_store_message">Choose the time the store closed.</string>
     <string name="close_store_forgot">The store was opened on %1$s and not closed. Choose the time it closed on that day.</string>
-    <string name="close_store_invalid">Closing time must be after opening time and not in the future.</string>
+    <string name="store_time_open_title">Open store</string>
+    <string name="store_time_open_message">Choose the time the store opened. Tap Now if you are opening it now.</string>
+    <string name="store_time_now">Now</string>
+    <string name="store_time_error_future">That time has not happened yet. Choose a time up to now.</string>
+    <string name="store_time_error_before_open">The closing time must be after the store opened.</string>
+    <string name="store_time_error_before_last_close">The store was last closed after that time. Choose a later time.</string>
+    <string name="store_time_error_failed">The time could not be saved. Please try again.</string>
     <string name="close_store_confirm">Close store</string>
 
     <!-- Reports -->

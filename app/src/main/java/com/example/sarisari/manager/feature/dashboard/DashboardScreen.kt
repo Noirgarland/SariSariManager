@@ -1,5 +1,6 @@
 package com.example.sarisari.manager.feature.dashboard
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -21,12 +21,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDialog
+import androidx.compose.material3.TimePickerDialogDefaults
+import androidx.compose.material3.TimePickerDisplayMode
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,7 +71,7 @@ fun DashboardScreen(
     DashboardContent(
         uiState = uiState,
         actions = DashboardActions(
-            onOpenStore = viewModel::onOpenStore,
+            onOpenStore = viewModel::onOpenStoreClicked,
             onCloseStore = viewModel::onCloseStoreClicked,
             onNewSale = onNewSale,
             onAddStock = onAddStock,
@@ -68,13 +79,18 @@ fun DashboardScreen(
             onSeeReports = onSeeReports,
         ),
     )
-    if (uiState.showCloseDialog) {
-        CloseStoreDialog(
-            uiState = uiState,
-            initialTime = viewModel.defaultCloseTime(),
-            onConfirm = viewModel::onCloseStoreConfirmed,
-            onDismiss = viewModel::onCloseDialogDismissed,
-        )
+    uiState.timeDialog?.let { dialog ->
+        // Keyed by action so reopening the dialog resets the clock to its starting time.
+        key(dialog.action) {
+            StoreTimeDialog(
+                dialog = dialog,
+                session = uiState.session,
+                sessionFromEarlierDay = uiState.sessionFromEarlierDay,
+                currentTime = viewModel::now,
+                onConfirm = viewModel::onTimeConfirmed,
+                onDismiss = viewModel::onTimeDialogDismissed,
+            )
+        }
     }
 }
 
@@ -216,41 +232,80 @@ private fun StoreHeader(uiState: DashboardUiState, actions: DashboardActions) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CloseStoreDialog(
-    uiState: DashboardUiState,
-    initialTime: LocalTime,
+private fun StoreTimeDialog(
+    dialog: StoreTimeDialogState,
+    session: StoreSession?,
+    sessionFromEarlierDay: Boolean,
+    currentTime: () -> LocalTime,
     onConfirm: (LocalTime) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val state = rememberTimePickerState(initialHour = initialTime.hour, initialMinute = initialTime.minute, is24Hour = false)
-    val session = uiState.session ?: return
-    AlertDialog(
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val screenHeight = with(density) { LocalWindowInfo.current.containerSize.height.toDp() }
+    val state = rememberTimePickerState(
+        initialHour = dialog.initialTime.hour,
+        initialMinute = dialog.initialTime.minute,
+        is24Hour = DateFormat.is24HourFormat(context),
+    )
+    // The clock face needs room. On short screens start with the keyboard entry instead.
+    var displayMode by remember {
+        mutableStateOf(
+            if (screenHeight < TimePickerDialogDefaults.MinHeightForTimePicker) TimePickerDisplayMode.Input
+            else TimePickerDisplayMode.Picker
+        )
+    }
+    val isOpen = dialog.action == StoreTimeAction.OPEN
+    TimePickerDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.close_store_title)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    if (uiState.sessionFromEarlierDay) {
-                        stringResource(R.string.close_store_forgot, Dates.formatDate(session.openedAtMillis))
-                    } else {
-                        stringResource(R.string.close_store_message)
-                    }
-                )
-                TimePicker(state = state)
-                if (uiState.closeTimeInvalid) {
-                    Text(stringResource(R.string.close_store_invalid), color = MaterialTheme.colorScheme.error)
-                }
-            }
+        title = {
+            Text(stringResource(if (isOpen) R.string.store_time_open_title else R.string.close_store_title))
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(LocalTime.of(state.hour, state.minute)) }) {
-                Text(stringResource(R.string.close_store_confirm))
+            TextButton(onClick = { onConfirm(LocalTime.of(state.hour, state.minute)) }, enabled = !dialog.isSaving) {
+                Text(stringResource(if (isOpen) R.string.dashboard_open_store else R.string.close_store_confirm))
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
-    )
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+        modeToggleButton = {
+            TimePickerDialogDefaults.DisplayModeToggle(
+                onDisplayModeChange = {
+                    displayMode = if (displayMode == TimePickerDisplayMode.Picker) {
+                        TimePickerDisplayMode.Input
+                    } else {
+                        TimePickerDisplayMode.Picker
+                    }
+                },
+                displayMode = displayMode,
+            )
+        },
+    ) {
+        Text(
+            when {
+                isOpen -> stringResource(R.string.store_time_open_message)
+                sessionFromEarlierDay && session != null ->
+                    stringResource(R.string.close_store_forgot, Dates.formatDate(session.openedAtMillis))
+                else -> stringResource(R.string.close_store_message)
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
+        if (displayMode == TimePickerDisplayMode.Picker) TimePicker(state = state) else TimeInput(state = state)
+        TextButton(
+            onClick = {
+                val now = currentTime()
+                state.hour = now.hour
+                state.minute = now.minute
+            },
+            modifier = Modifier.heightIn(min = 48.dp),
+        ) { Text(stringResource(R.string.store_time_now)) }
+        dialog.errorRes?.let {
+            Text(stringResource(it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
 }
-
 @Preview(showBackground = true)
 @Composable
 private fun DashboardPreview() {

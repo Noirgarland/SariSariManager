@@ -1,8 +1,21 @@
 package com.example.sarisari.manager.feature.dashboard
 
+import androidx.annotation.StringRes
 import com.example.sarisari.manager.domain.model.ReportSummary
 import com.example.sarisari.manager.domain.model.StoreSession
 import com.example.sarisari.manager.domain.model.TopProduct
+import java.time.LocalTime
+
+enum class StoreTimeAction { OPEN, CLOSE }
+
+/** The clock dialog for choosing when the store opened or closed. */
+data class StoreTimeDialogState(
+    val action: StoreTimeAction,
+    /** Where the clock hands start. */
+    val initialTime: LocalTime,
+    @param:StringRes val errorRes: Int? = null,
+    val isSaving: Boolean = false,
+)
 
 data class DashboardUiState(
     val isLoading: Boolean = true,
@@ -15,6 +28,6 @@ data class DashboardUiState(
     val today: ReportSummary = ReportSummary(),
     val lowStockCount: Int = 0,
     val topProducts: List<TopProduct> = emptyList(),
-    val showCloseDialog: Boolean = false,
-    val closeTimeInvalid: Boolean = false,
+    /** Null when no time dialog is shown. */
+    val timeDialog: StoreTimeDialogState? = null,
 )
