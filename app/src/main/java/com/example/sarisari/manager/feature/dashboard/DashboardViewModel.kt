@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 class DashboardViewModel @Inject constructor(
     reports: ReportRepository,
     products: ProductRepository,
-    settings: SettingsRepository,
+    private val settings: SettingsRepository,
     sessions: StoreSessionRepository,
     private val storeSession: StoreSessionUseCase,
     private val clock: Clock,
@@ -75,6 +75,16 @@ class DashboardViewModel @Inject constructor(
 
     /** Called when the screen is shown, so "today" moves forward after midnight. */
     fun onResume() = today.update { current -> ReportPeriod.today(clock).takeIf { it != current } ?: current }
+
+    /**
+     * Saves a new store name, using the same rules as Settings.
+     * Returns false without saving when the name is blank or too long.
+     */
+    fun onRenameStore(input: String): Boolean {
+        val name = StoreSettings.normalizeStoreName(input) ?: return false
+        viewModelScope.launch { settings.putSetting(StoreSettings.STORE_NAME_KEY, name) }
+        return true
+    }
 
     /** Shows the clock set to now. */
     fun onOpenStoreClicked() = timeDialog.update { StoreTimeDialogState(StoreTimeAction.OPEN, now()) }
