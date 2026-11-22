@@ -21,6 +21,10 @@ data class ProductEditUiState(
     val cost: String = "",
     val price: String = "",
     val threshold: String = DEFAULT_THRESHOLD,
+    /** New products only: how many base units the owner has now. Blank means 0. */
+    val openingStock: String = "",
+    /** Existing products only: the current stock, shown read-only. */
+    val stockOnHand: Int = 0,
     val units: List<UnitForm> = emptyList(),
     val errors: Set<ProductError> = emptySet(),
     val isSaving: Boolean = false,

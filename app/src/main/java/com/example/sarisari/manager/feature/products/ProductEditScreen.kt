@@ -63,6 +63,7 @@ fun ProductEditScreen(onBack: () -> Unit, viewModel: ProductEditViewModel = hilt
         onCostChange = viewModel::onCostChange,
         onPriceChange = viewModel::onPriceChange,
         onThresholdChange = viewModel::onThresholdChange,
+        onOpeningStockChange = viewModel::onOpeningStockChange,
         onAddUnit = viewModel::onAddUnit,
         onRemoveUnit = viewModel::onRemoveUnit,
         onUnitChange = viewModel::onUnitChange,
@@ -82,6 +83,7 @@ internal fun ProductEditContent(
     onCostChange: (String) -> Unit,
     onPriceChange: (String) -> Unit,
     onThresholdChange: (String) -> Unit,
+    onOpeningStockChange: (String) -> Unit,
     onAddUnit: () -> Unit,
     onRemoveUnit: (Int) -> Unit,
     onUnitChange: (Int, UnitForm) -> Unit,
@@ -159,11 +161,30 @@ internal fun ProductEditContent(
                 keyboardType = KeyboardType.Number,
                 error = errorText(uiState, ProductError.THRESHOLD_INVALID, R.string.product_error_threshold),
             )
-            if (!uiState.isEditing) {
+            val unitLabel = uiState.baseUnit.trim().ifEmpty { stringResource(R.string.product_form_base_unit_fallback) }
+            if (uiState.isEditing) {
                 Text(
-                    stringResource(R.string.product_form_stock_note),
+                    stringResource(R.string.product_form_stock_on_hand, uiState.stockOnHand, unitLabel),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                OutlinedTextField(
+                    value = uiState.openingStock,
+                    onValueChange = onOpeningStockChange,
+                    label = { Text(stringResource(R.string.product_form_opening_stock, unitLabel)) },
+                    singleLine = true,
+                    isError = ProductError.OPENING_STOCK_INVALID in uiState.errors,
+                    supportingText = {
+                        Text(
+                            stringResource(
+                                if (ProductError.OPENING_STOCK_INVALID in uiState.errors) R.string.product_error_opening_stock
+                                else R.string.product_form_opening_stock_hint
+                            )
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
@@ -339,7 +360,7 @@ private fun ProductEditContentPreview() {
                 cost = "45.00", price = "65.00", units = listOf(UnitForm("pack", "6", "360.00")),
             ),
             onBack = {}, onNameChange = {}, onCategoryChange = {}, onBaseUnitChange = {}, onCostChange = {},
-            onPriceChange = {}, onThresholdChange = {}, onAddUnit = {}, onRemoveUnit = {},
+            onPriceChange = {}, onThresholdChange = {}, onOpeningStockChange = {}, onAddUnit = {}, onRemoveUnit = {},
             onUnitChange = { _, _ -> }, onSave = {}, onArchiveChange = {},
         )
     }

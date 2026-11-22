@@ -15,6 +15,7 @@ enum class ProductError {
     UNIT_NAME_DUPLICATE,
     UNIT_QUANTITY_INVALID,
     UNIT_PRICE_INVALID,
+    OPENING_STOCK_INVALID,
 }
 
 sealed interface SaveProductResult {
@@ -55,6 +56,10 @@ class SaveProductUseCase @Inject constructor(
             if (product.costCentavos !in 0..MAX_COST_CENTAVOS) add(ProductError.COST_INVALID)
             if (product.sellingPriceCentavos !in 1..MAX_PRICE_CENTAVOS) add(ProductError.PRICE_INVALID)
             if (product.lowStockThreshold !in 0..QuantityLimits.MAX_STOCK_QUANTITY) add(ProductError.THRESHOLD_INVALID)
+            // A new product's stock is its opening stock, recorded as one receipt. Existing stock changes through Inventory.
+            if (product.id == 0L && product.stockQuantity !in 0..QuantityLimits.MAX_MOVEMENT_QUANTITY) {
+                add(ProductError.OPENING_STOCK_INVALID)
+            }
             val seen = mutableSetOf(product.baseUnitName.lowercase())
             product.units.forEach { unit ->
                 if (unit.name.isBlank() || unit.name.length > MAX_NAME_LENGTH) {

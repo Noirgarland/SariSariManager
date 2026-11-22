@@ -74,6 +74,23 @@ class ProductDaoTest {
     }
 
     @Test
+    fun openingStockOfANewProductIsRecordedAsAReceipt() = runTest {
+        val id = db.productDao().save(product("Coke", stock = 48), listOf(unit("case", 24)), now = 1000)
+        assertEquals(48, db.productDao().getWithUnits(id)!!.product.stockQuantity)
+        val movement = db.stockMovementDao().observe(id, 10).first().single().movement
+        assertEquals("RECEIPT", movement.type)
+        assertEquals(48, movement.quantityChange)
+        assertEquals(1000L, movement.unitCostCentavos)
+        assertEquals(48_000L, movement.totalCostCentavos)
+        assertEquals("Opening stock", movement.reason)
+        assertEquals(db.stockMovementDao().sumQuantity(id), 48)
+
+        // No opening stock means no movement.
+        val empty = db.productDao().save(product("Sprite"), emptyList(), now = 1000)
+        assertEquals(0, db.stockMovementDao().observe(empty, 10).first().size)
+    }
+
+    @Test
     fun searchIsCaseInsensitiveAndEscapesWildcards() = runTest {
         val dao = db.productDao()
         dao.save(product("Coke 1.5L"), emptyList(), 1)
