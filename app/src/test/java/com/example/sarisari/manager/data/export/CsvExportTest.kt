@@ -52,6 +52,15 @@ class CsvWriterTest {
     }
 
     @Test
+    fun extremeMoneyValuesDoNotOverflow() {
+        assertEquals("-92233720368547758.08", CsvWriter.formatMoney(Long.MIN_VALUE))
+        assertEquals("92233720368547758.07", CsvWriter.formatMoney(Long.MAX_VALUE))
+        // 10^9 units at 10^11 centavos each is 10^20 centavos, beyond Long. The stock value stays exact.
+        assertEquals("1000000000000000000.00\r\n", line(CsvWriter.moneyTimes(1_000_000_000, 100_000_000_000)))
+        assertEquals("4545.00\r\n", line(CsvWriter.moneyTimes(101, 4500)))
+    }
+
+    @Test
     fun rowsUseCrlfAndTheFileStartsWithAByteOrderMark() {
         val out = StringWriter()
         CsvWriter(out).apply {
@@ -84,6 +93,8 @@ class ExportRepositoryTest {
             )
             val clock = FakeClock(Instant.parse("2025-11-18T02:30:00Z"))
             val sales = SalesRepositoryImpl(db.saleDao(), clock)
+            // Checkout refuses to sell more than the stock on hand, so receive enough stock first.
+            db.stockMovementDao().receive(cokeId, 700, 700 * 4500L, null, now = 1) { _, _ -> 4500 }
             repeat(600) { sales.completeSale(listOf(SaleLineInput(cokeId, "bottle", 1, 1, 6000)), 6000) }
             sales.voidSale(1, null)
 
@@ -99,8 +110,8 @@ class ExportRepositoryTest {
             val productsOut = StringWriter()
             assertEquals(1, exporter.writeProducts(productsOut))
             val productLine = productsOut.toString().split("\r\n")[1]
-            // 600 sold from 0 stock and one sale voided: stock is -599, so stock value is 0.
-            assertEquals("\"'=Coke, 1.5L\",Drinks,bottle,45.00,65.00,-599,5,0.00,Active", productLine)
+            // 700 received, 600 sold, one sale voided: stock is 101, worth 101 x 45.00.
+            assertEquals("\"'=Coke, 1.5L\",Drinks,bottle,45.00,65.00,101,5,4545.00,Active", productLine)
         } finally {
             db.close()
         }

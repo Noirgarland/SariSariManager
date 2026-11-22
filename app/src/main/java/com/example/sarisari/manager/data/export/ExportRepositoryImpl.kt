@@ -98,7 +98,7 @@ class ExportRepositoryImpl @Inject constructor(
                     CsvWriter.money(row.sellingPriceCentavos),
                     CsvWriter.number(row.stockQuantity),
                     CsvWriter.number(row.lowStockThreshold),
-                    CsvWriter.money(maxOf(0, row.stockQuantity).toLong() * row.costCentavos),
+                    CsvWriter.moneyTimes(maxOf(0, row.stockQuantity).toLong(), row.costCentavos),
                     CsvWriter.text(if (row.isArchived) "Archived" else "Active"),
                 )
             }
